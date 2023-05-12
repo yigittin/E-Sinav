@@ -9,12 +9,16 @@ using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Identity;
+using Volo.Abp.Users;
 
 namespace SanalVaka.Dersler
 {
     public class DersAppService:CrudAppService<Ders,DersDto, Guid, PagedAndSortedResultRequestDto,CreateUpdateDersDto>,IDersAppService
     {
-        public DersAppService(IRepository<Ders, Guid> repository)
+        private readonly IRepository<IdentityUser, Guid> _kullaniciRepo;
+        private readonly ICurrentUser _currentUser;
+        public DersAppService(IRepository<Ders, Guid> repository, IRepository<IdentityUser, Guid> kullaniciRepo, ICurrentUser currentUser)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Dersler.Default;
@@ -22,6 +26,14 @@ namespace SanalVaka.Dersler
             CreatePolicyName = SanalVakaPermissions.Dersler.Create;
             UpdatePolicyName = SanalVakaPermissions.Dersler.Edit;
             DeletePolicyName = SanalVakaPermissions.Dersler.Delete;
+            _kullaniciRepo = kullaniciRepo;
+            _currentUser = currentUser;
+
         }
+        //public async Task<List<IdentityUserDto>> GetOgrencilerByDers(Guid dersGuid)
+        //{
+        //    var entity= await _kullaniciRepo.GetAsync(x=>x.)
+        //}
+
     }
 }

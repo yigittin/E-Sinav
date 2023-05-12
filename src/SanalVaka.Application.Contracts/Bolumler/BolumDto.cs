@@ -8,5 +8,6 @@ namespace SanalVaka.Bolumler
     public class BolumDto:AuditedEntityDto<Guid>
     {
         public string Name { get; set; }
+        public bool IsOnaylandi { get; set; }
     }
 }

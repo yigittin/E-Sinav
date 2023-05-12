@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SanalVaka.Bolumler;
 using SanalVaka.Dersler;
+using SanalVaka.Many2Many;
 using SanalVaka.Siniflar;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
@@ -59,6 +60,10 @@ public class SanalVakaDbContext :
     public DbSet<Bolum> Bolumler { get; set; }
     public DbSet<Ders> Dersler { get; set; }
     public DbSet<Sinif> Siniflar { get; set; }
+    public DbSet<DersUser> DersUsers { get; set; }
+    public DbSet<SinifUser> SinifUsers { get; set; }
+
+
 
     public SanalVakaDbContext(DbContextOptions<SanalVakaDbContext> options)
         : base(options)

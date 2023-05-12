@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Entities.Auditing;
 
-namespace SanalVaka.Bolumler
+namespace SanalVaka.Many2Many
 {
-    public class Bolum : FullAuditedAggregateRoot<Guid>
+    public class DersUser:FullAuditedAggregateRoot<Guid>
     {
-        public string Name { get; set; }
-        public bool IsOnaylandi { get; set; }
+        public Guid DersId { get; set; }
+        public Guid UserId { get; set; }
 
     }
 }

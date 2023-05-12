@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Identity;
 
 namespace SanalVaka.SinifDtos
 {
@@ -11,6 +12,9 @@ namespace SanalVaka.SinifDtos
         public int SinifLimit { get; set; }
         public Guid DersId { get; set; }
         public string DersName { get; set; }
+        public bool IsOnaylandi { get; set; }
+        public string OnaylayanKullaniciAdi { get; set; }
+        public List<IdentityUserDto> OgrenciList { get; set; }
 
     }
 }
