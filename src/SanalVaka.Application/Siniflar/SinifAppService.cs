@@ -1,5 +1,7 @@
-﻿using SanalVaka.DersDtos;
+﻿using AutoMapper.Internal.Mappers;
+using SanalVaka.DersDtos;
 using SanalVaka.Dersler;
+using SanalVaka.Many2Many;
 using SanalVaka.Permissions;
 using SanalVaka.SinifDtos;
 using System;
@@ -20,7 +22,8 @@ namespace SanalVaka.Siniflar
     {
         private readonly IRepository<IdentityUser,Guid> _kullaniciRepo;
         private readonly ICurrentUser _currentUser;
-        public SinifAppService(IRepository<Sinif, Guid> repository,IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser currentUser)
+        private readonly IRepository<SinifUser> _sinifUserRepo;
+        public SinifAppService(IRepository<Sinif, Guid> repository,IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser currentUser,IRepository<SinifUser> sinifUserRepo)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Siniflar.Default;
@@ -30,6 +33,7 @@ namespace SanalVaka.Siniflar
             DeletePolicyName = SanalVakaPermissions.Siniflar.Delete;
             _kullaniciRepo = kullaniciRepo;
             _currentUser = currentUser;
+            _sinifUserRepo = sinifUserRepo;
         }
         public async Task<SinifDto> OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
@@ -43,11 +47,14 @@ namespace SanalVaka.Siniflar
             {
                 throw new UserFriendlyException("Öğrenci bulunamadı");
             }
-            entity.OgrenciList.Add(entityOgrenci);
-            await Repository.UpdateAsync(entity);
+            var sinifUser = new SinifUser();
+            sinifUser.UserId = entityOgrenci.Id;
+            sinifUser.SinifId = entity.Id;
+            await _sinifUserRepo.InsertAsync(sinifUser);
+            var res= ObjectMapper.Map<Sinif,SinifDto>(entity);
+            res.OgrenciList = ObjectMapper.Map<List<IdentityUser>, List<IdentityUserDto>>(entity.OgrenciList);
 
-            return ObjectMapper.Map<Sinif,SinifDto>(entity);
-
+            return res;
         }
 
         public async Task<SinifDto> SinifOnayla(Guid guidSinif)
@@ -73,16 +80,26 @@ namespace SanalVaka.Siniflar
             {
                 throw new UserFriendlyException("Sınıf bulunamadı");
             }
+            List<SinifUser> sinifUserList = new List<SinifUser>();
             foreach (var identityUser in list)
             {
                 var user=await _kullaniciRepo.FindAsync(identityUser);
                 if(user is not null)
                 {
                     entity.OgrenciList.Add(user);
+                    var sinifUser = new SinifUser();
+                    sinifUser.SinifId = entity.Id;
+                    sinifUser.UserId = identityUser;
+                    sinifUserList.Add(sinifUser);
                 }
             }
+            await _sinifUserRepo.InsertManyAsync(sinifUserList);
             await Repository.UpdateAsync(entity);
-            return ObjectMapper.Map<Sinif,SinifDto>(entity);
+            var res = ObjectMapper.Map<Sinif, SinifDto>(entity);
+            res.OgrenciList = ObjectMapper.Map<List<IdentityUser>, List<IdentityUserDto>>(entity.OgrenciList);
+
+            return res;
+           // return ObjectMapper.Map<Sinif,SinifDto>(entity);
         }
 
 

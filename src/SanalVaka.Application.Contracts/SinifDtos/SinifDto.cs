@@ -15,6 +15,7 @@ namespace SanalVaka.SinifDtos
         public bool IsOnaylandi { get; set; }
         public string OnaylayanKullaniciAdi { get; set; }
         public List<IdentityUserDto> OgrenciList { get; set; }
+        
 
     }
 }
