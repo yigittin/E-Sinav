@@ -30,10 +30,7 @@ namespace SanalVaka.Dersler
             _currentUser = currentUser;
 
         }
-        //public async Task<List<IdentityUserDto>> GetOgrencilerByDers(Guid dersGuid)
-        //{
-        //    var entity= await _kullaniciRepo.GetAsync(x=>x.)
-        //}
+
 
     }
 }

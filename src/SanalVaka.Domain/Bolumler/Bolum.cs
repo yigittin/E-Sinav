@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SanalVaka.Dersler;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,7 @@ namespace SanalVaka.Bolumler
     {
         public string Name { get; set; }
         public bool IsOnaylandi { get; set; }
+        public List<Ders> DersList { get; set; }
 
     }
 }

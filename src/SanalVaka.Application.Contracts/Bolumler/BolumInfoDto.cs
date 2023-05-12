@@ -1,15 +1,14 @@
-﻿using SanalVaka.DersDtos;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Volo.Abp.Application.Dtos;
 
 namespace SanalVaka.Bolumler
 {
-    public class BolumDto:AuditedEntityDto<Guid>
+    public class BolumInfoDto
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
         public bool IsOnaylandi { get; set; }
-        public List<DersDto> DersList { get; set; }
+        public Guid CreatorId { get; set; }
     }
 }
