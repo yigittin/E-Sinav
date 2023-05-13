@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SanalVaka.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SanalVaka.Migrations
 {
     [DbContext(typeof(SanalVakaDbContext))]
-    partial class SanalVakaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230513160836_SiniflarVeYetkililer")]
+    partial class SiniflarVeYetkililer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -23,36 +26,6 @@ namespace SanalVaka.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BolumBolumYetkili", b =>
-                {
-                    b.Property<Guid>("BolumlerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("YetkililerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BolumlerId", "YetkililerId");
-
-                    b.HasIndex("YetkililerId");
-
-                    b.ToTable("BolumBolumYetkili");
-                });
-
-            modelBuilder.Entity("DersDersYetkili", b =>
-                {
-                    b.Property<Guid>("DerslerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("YetkililerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("DerslerId", "YetkililerId");
-
-                    b.HasIndex("YetkililerId");
-
-                    b.ToTable("DersDersYetkili");
-                });
 
             modelBuilder.Entity("DersOgrenci", b =>
                 {
@@ -172,6 +145,9 @@ namespace SanalVaka.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DersYetkiliId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ExtraProperties")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
@@ -193,6 +169,8 @@ namespace SanalVaka.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BolumId");
+
+                    b.HasIndex("DersYetkiliId");
 
                     b.ToTable("Dersler");
                 });
@@ -325,6 +303,12 @@ namespace SanalVaka.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<Guid?>("BolumId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("BolumYetkiliId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasMaxLength(40)
@@ -374,6 +358,10 @@ namespace SanalVaka.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BolumId");
+
+                    b.HasIndex("BolumYetkiliId");
 
                     b.HasIndex("UserId");
 
@@ -410,9 +398,6 @@ namespace SanalVaka.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
-                    b.Property<int?>("DersYetkiliId")
-                        .HasColumnType("int");
-
                     b.Property<string>("ExtraProperties")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
@@ -440,8 +425,6 @@ namespace SanalVaka.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DersYetkiliId");
 
                     b.HasIndex("UserId");
 
@@ -478,6 +461,9 @@ namespace SanalVaka.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
+                    b.Property<Guid?>("DersId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ExtraProperties")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
@@ -506,6 +492,8 @@ namespace SanalVaka.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DersId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("SinifYetkililer");
@@ -513,15 +501,15 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SinifSinifYetkili", b =>
                 {
+                    b.Property<int>("SinifYetkililerId")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("SiniflarId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("YetkililerId")
-                        .HasColumnType("int");
+                    b.HasKey("SinifYetkililerId", "SiniflarId");
 
-                    b.HasKey("SiniflarId", "YetkililerId");
-
-                    b.HasIndex("YetkililerId");
+                    b.HasIndex("SiniflarId");
 
                     b.ToTable("SinifSinifYetkili");
                 });
@@ -2182,36 +2170,6 @@ namespace SanalVaka.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
-            modelBuilder.Entity("BolumBolumYetkili", b =>
-                {
-                    b.HasOne("SanalVaka.Bolumler.Bolum", null)
-                        .WithMany()
-                        .HasForeignKey("BolumlerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Yetkililer.BolumYetkili", null)
-                        .WithMany()
-                        .HasForeignKey("YetkililerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DersDersYetkili", b =>
-                {
-                    b.HasOne("SanalVaka.Dersler.Ders", null)
-                        .WithMany()
-                        .HasForeignKey("DerslerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Yetkililer.DersYetkili", null)
-                        .WithMany()
-                        .HasForeignKey("YetkililerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("DersOgrenci", b =>
                 {
                     b.HasOne("SanalVaka.Ogrenciler.Ogrenci", null)
@@ -2250,6 +2208,10 @@ namespace SanalVaka.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SanalVaka.Yetkililer.DersYetkili", null)
+                        .WithMany("Dersler")
+                        .HasForeignKey("DersYetkiliId");
+
                     b.Navigation("Bolum");
                 });
 
@@ -2266,6 +2228,14 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SanalVaka.Yetkililer.BolumYetkili", b =>
                 {
+                    b.HasOne("SanalVaka.Bolumler.Bolum", null)
+                        .WithMany("BolumYetkililer")
+                        .HasForeignKey("BolumId");
+
+                    b.HasOne("SanalVaka.Yetkililer.BolumYetkili", null)
+                        .WithMany("Bolumler")
+                        .HasForeignKey("BolumYetkiliId");
+
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -2277,10 +2247,6 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
                 {
-                    b.HasOne("SanalVaka.Yetkililer.DersYetkili", null)
-                        .WithMany("DersYetkililer")
-                        .HasForeignKey("DersYetkiliId");
-
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -2292,6 +2258,10 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SanalVaka.Yetkililer.SinifYetkili", b =>
                 {
+                    b.HasOne("SanalVaka.Dersler.Ders", null)
+                        .WithMany("DersYetkililer")
+                        .HasForeignKey("DersId");
+
                     b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -2303,15 +2273,15 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SinifSinifYetkili", b =>
                 {
-                    b.HasOne("SanalVaka.Siniflar.Sinif", null)
+                    b.HasOne("SanalVaka.Yetkililer.SinifYetkili", null)
                         .WithMany()
-                        .HasForeignKey("SiniflarId")
+                        .HasForeignKey("SinifYetkililerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SanalVaka.Yetkililer.SinifYetkili", null)
+                    b.HasOne("SanalVaka.Siniflar.Sinif", null)
                         .WithMany()
-                        .HasForeignKey("YetkililerId")
+                        .HasForeignKey("SiniflarId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2458,9 +2428,24 @@ namespace SanalVaka.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
+            modelBuilder.Entity("SanalVaka.Bolumler.Bolum", b =>
+                {
+                    b.Navigation("BolumYetkililer");
+                });
+
+            modelBuilder.Entity("SanalVaka.Dersler.Ders", b =>
                 {
                     b.Navigation("DersYetkililer");
+                });
+
+            modelBuilder.Entity("SanalVaka.Yetkililer.BolumYetkili", b =>
+                {
+                    b.Navigation("Bolumler");
+                });
+
+            modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
+                {
+                    b.Navigation("Dersler");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>

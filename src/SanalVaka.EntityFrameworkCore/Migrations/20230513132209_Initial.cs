@@ -355,8 +355,6 @@ namespace SanalVaka.Migrations
                     ShouldChangePasswordOnNextLogin = table.Column<bool>(type: "bit", nullable: false),
                     EntityVersion = table.Column<int>(type: "int", nullable: false),
                     LastPasswordChangeTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    Discriminator = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OgrenciNo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -370,50 +368,6 @@ namespace SanalVaka.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AbpUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Bolumler",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsOnaylandi = table.Column<bool>(type: "bit", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Bolumler", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DersUsers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DersUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -474,28 +428,6 @@ namespace SanalVaka.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_OpenIddictScopes", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SinifUsers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SinifId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SinifUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -731,68 +663,13 @@ namespace SanalVaka.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BolumOgrenci",
+                name: "Ogrenciler",
                 columns: table => new
                 {
-                    OgrenciBolumListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OgrenciListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BolumOgrenci", x => new { x.OgrenciBolumListId, x.OgrenciListId });
-                    table.ForeignKey(
-                        name: "FK_BolumOgrenci_AbpUsers_OgrenciListId",
-                        column: x => x.OgrenciListId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BolumOgrenci_Bolumler_OgrenciBolumListId",
-                        column: x => x.OgrenciBolumListId,
-                        principalTable: "Bolumler",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BolumYetkililer",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BolumId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    YetkiliIdId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BolumYetkililer", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_BolumYetkililer_AbpUsers_YetkiliIdId",
-                        column: x => x.YetkiliIdId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BolumYetkililer_Bolumler_BolumId",
-                        column: x => x.BolumId,
-                        principalTable: "Bolumler",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Dersler",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BolumId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OgrenciNo = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -805,11 +682,11 @@ namespace SanalVaka.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Dersler", x => x.Id);
+                    table.PrimaryKey("PK_Ogrenciler", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Dersler_Bolumler_BolumId",
-                        column: x => x.BolumId,
-                        principalTable: "Bolumler",
+                        name: "FK_Ogrenciler_AbpUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AbpUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -870,101 +747,6 @@ namespace SanalVaka.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DersOgrenci",
-                columns: table => new
-                {
-                    DersOgrenciListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OgrenciDersListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DersOgrenci", x => new { x.DersOgrenciListId, x.OgrenciDersListId });
-                    table.ForeignKey(
-                        name: "FK_DersOgrenci_AbpUsers_DersOgrenciListId",
-                        column: x => x.DersOgrenciListId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DersOgrenci_Dersler_OgrenciDersListId",
-                        column: x => x.OgrenciDersListId,
-                        principalTable: "Dersler",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DersYetkililer",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    YetkiliIdId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DersYetkililer", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DersYetkililer_AbpUsers_YetkiliIdId",
-                        column: x => x.YetkiliIdId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DersYetkililer_Dersler_DersId",
-                        column: x => x.DersId,
-                        principalTable: "Dersler",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Siniflar",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SinifLimit = table.Column<int>(type: "int", nullable: false),
-                    DersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsOnaylandi = table.Column<bool>(type: "bit", nullable: false),
-                    OnaylayanKullaniciId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Siniflar", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Siniflar_AbpUsers_OnaylayanKullaniciId",
-                        column: x => x.OnaylayanKullaniciId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Siniflar_Dersler_DersId",
-                        column: x => x.DersId,
-                        principalTable: "Dersler",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OpenIddictTokens",
                 columns: table => new
                 {
@@ -1003,64 +785,6 @@ namespace SanalVaka.Migrations
                         column: x => x.AuthorizationId,
                         principalTable: "OpenIddictAuthorizations",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OgrenciSinif",
-                columns: table => new
-                {
-                    OgrenciSinifListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SinifOgrenciListId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OgrenciSinif", x => new { x.OgrenciSinifListId, x.SinifOgrenciListId });
-                    table.ForeignKey(
-                        name: "FK_OgrenciSinif_AbpUsers_SinifOgrenciListId",
-                        column: x => x.SinifOgrenciListId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OgrenciSinif_Siniflar_OgrenciSinifListId",
-                        column: x => x.OgrenciSinifListId,
-                        principalTable: "Siniflar",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SinifYetkililer",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SinifId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    YetkiliIdId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: true),
-                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    LastModifierId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    DeleterId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    DeletionTime = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SinifYetkililer", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SinifYetkililer_AbpUsers_YetkiliIdId",
-                        column: x => x.YetkiliIdId,
-                        principalTable: "AbpUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SinifYetkililer_Siniflar_SinifId",
-                        column: x => x.SinifId,
-                        principalTable: "Siniflar",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -1256,44 +980,9 @@ namespace SanalVaka.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BolumOgrenci_OgrenciListId",
-                table: "BolumOgrenci",
-                column: "OgrenciListId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BolumYetkililer_BolumId",
-                table: "BolumYetkililer",
-                column: "BolumId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_BolumYetkililer_YetkiliIdId",
-                table: "BolumYetkililer",
-                column: "YetkiliIdId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Dersler_BolumId",
-                table: "Dersler",
-                column: "BolumId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DersOgrenci_OgrenciDersListId",
-                table: "DersOgrenci",
-                column: "OgrenciDersListId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DersYetkililer_DersId",
-                table: "DersYetkililer",
-                column: "DersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DersYetkililer_YetkiliIdId",
-                table: "DersYetkililer",
-                column: "YetkiliIdId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OgrenciSinif_SinifOgrenciListId",
-                table: "OgrenciSinif",
-                column: "SinifOgrenciListId");
+                name: "IX_Ogrenciler_UserId",
+                table: "Ogrenciler",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -1324,26 +1013,6 @@ namespace SanalVaka.Migrations
                 name: "IX_OpenIddictTokens_ReferenceId",
                 table: "OpenIddictTokens",
                 column: "ReferenceId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Siniflar_DersId",
-                table: "Siniflar",
-                column: "DersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Siniflar_OnaylayanKullaniciId",
-                table: "Siniflar",
-                column: "OnaylayanKullaniciId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SinifYetkililer_SinifId",
-                table: "SinifYetkililer",
-                column: "SinifId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SinifYetkililer_YetkiliIdId",
-                table: "SinifYetkililer",
-                column: "YetkiliIdId");
         }
 
         /// <inheritdoc />
@@ -1416,34 +1085,13 @@ namespace SanalVaka.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BolumOgrenci");
-
-            migrationBuilder.DropTable(
-                name: "BolumYetkililer");
-
-            migrationBuilder.DropTable(
-                name: "DersOgrenci");
-
-            migrationBuilder.DropTable(
-                name: "DersUsers");
-
-            migrationBuilder.DropTable(
-                name: "DersYetkililer");
-
-            migrationBuilder.DropTable(
-                name: "OgrenciSinif");
+                name: "Ogrenciler");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictTokens");
-
-            migrationBuilder.DropTable(
-                name: "SinifUsers");
-
-            migrationBuilder.DropTable(
-                name: "SinifYetkililer");
 
             migrationBuilder.DropTable(
                 name: "AbpEntityChanges");
@@ -1458,25 +1106,16 @@ namespace SanalVaka.Migrations
                 name: "AbpRoles");
 
             migrationBuilder.DropTable(
-                name: "OpenIddictAuthorizations");
+                name: "AbpUsers");
 
             migrationBuilder.DropTable(
-                name: "Siniflar");
+                name: "OpenIddictAuthorizations");
 
             migrationBuilder.DropTable(
                 name: "AbpAuditLogs");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictApplications");
-
-            migrationBuilder.DropTable(
-                name: "AbpUsers");
-
-            migrationBuilder.DropTable(
-                name: "Dersler");
-
-            migrationBuilder.DropTable(
-                name: "Bolumler");
         }
     }
 }

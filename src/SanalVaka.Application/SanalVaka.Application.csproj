@@ -9,6 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Bolumler\**" />
+    <Compile Remove="Dersler\**" />
+    <Compile Remove="Siniflar\**" />
+    <EmbeddedResource Remove="Bolumler\**" />
+    <EmbeddedResource Remove="Dersler\**" />
+    <EmbeddedResource Remove="Siniflar\**" />
+    <None Remove="Bolumler\**" />
+    <None Remove="Dersler\**" />
+    <None Remove="Siniflar\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SanalVaka.Domain\SanalVaka.Domain.csproj" />
     <ProjectReference Include="..\SanalVaka.Application.Contracts\SanalVaka.Application.Contracts.csproj" />
   </ItemGroup>

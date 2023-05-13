@@ -48,8 +48,8 @@ namespace SanalVaka.Siniflar
                 throw new UserFriendlyException("Öğrenci bulunamadı");
             }
             var sinifUser = new SinifUser();
-            sinifUser.UserId = entityOgrenci.Id;
-            sinifUser.SinifId = entity.Id;
+            //sinifUser.UserId = entityOgrenci.Id;
+            //sinifUser.SinifId = entity.Id;
             await _sinifUserRepo.InsertAsync(sinifUser);
         }
 

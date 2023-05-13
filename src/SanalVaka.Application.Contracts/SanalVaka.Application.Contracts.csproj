@@ -9,6 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Bolumler\**" />
+    <Compile Remove="DersDtos\**" />
+    <Compile Remove="SinifDtos\**" />
+    <EmbeddedResource Remove="Bolumler\**" />
+    <EmbeddedResource Remove="DersDtos\**" />
+    <EmbeddedResource Remove="SinifDtos\**" />
+    <None Remove="Bolumler\**" />
+    <None Remove="DersDtos\**" />
+    <None Remove="SinifDtos\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SanalVaka.Domain.Shared\SanalVaka.Domain.Shared.csproj" />
   </ItemGroup>
 
