@@ -1,6 +1,10 @@
-﻿using SanalVaka.Dersler;
+﻿using SanalVaka.Bolumler;
+using SanalVaka.CustomUsers;
+using SanalVaka.Dersler;
+using SanalVaka.Ogrenciler;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +23,7 @@ namespace SanalVaka.Siniflar
         public Ders Ders { get; set; }
         public bool IsOnaylandi { get; set; }
         public IdentityUser OnaylayanKullanici { get; set; }
-        public List<IdentityUser> OgrenciList { get; set; }
+        public ICollection<Ogrenci> SinifOgrenciList { get; set; }
+        public ICollection<SinifYetkili> SinifYetkiliList { get; set; }
     }
 }

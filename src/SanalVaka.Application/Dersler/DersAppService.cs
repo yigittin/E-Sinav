@@ -10,6 +10,7 @@ using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
+using Volo.Abp.ObjectMapping;
 using Volo.Abp.Users;
 
 namespace SanalVaka.Dersler
@@ -30,7 +31,18 @@ namespace SanalVaka.Dersler
             _currentUser = currentUser;
 
         }
-
-
+        public async Task<List<DersInfoDto>> GetDersInfo()
+        {
+            var entity = await Repository.GetListAsync();
+            var res = ObjectMapper.Map<List<Ders>, List<DersInfoDto>>(entity);
+            foreach (var item in res)
+            {
+                var creator = await _kullaniciRepo.FindAsync(item.CreatorId);
+                item.CreatorUserName = creator.UserName;
+            }
+            return res;
+        }
     }
+
 }
+

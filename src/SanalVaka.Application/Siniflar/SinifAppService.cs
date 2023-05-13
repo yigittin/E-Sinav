@@ -35,7 +35,7 @@ namespace SanalVaka.Siniflar
             _currentUser = currentUser;
             _sinifUserRepo = sinifUserRepo;
         }
-        public async Task<SinifDto> OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
+        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if(entity == null)
@@ -51,13 +51,9 @@ namespace SanalVaka.Siniflar
             sinifUser.UserId = entityOgrenci.Id;
             sinifUser.SinifId = entity.Id;
             await _sinifUserRepo.InsertAsync(sinifUser);
-            var res= ObjectMapper.Map<Sinif,SinifDto>(entity);
-            res.OgrenciList = ObjectMapper.Map<List<IdentityUser>, List<IdentityUserDto>>(entity.OgrenciList);
-
-            return res;
         }
 
-        public async Task<SinifDto> SinifOnayla(Guid guidSinif)
+        public async Task SinifOnayla(Guid guidSinif)
         {
             var entity=await Repository.FindAsync(guidSinif);
 
@@ -65,41 +61,54 @@ namespace SanalVaka.Siniflar
             {
                 throw new UserFriendlyException("Sınıf bulunamadı");
             }
-            var entityKullanici=await _kullaniciRepo.FindAsync((Guid)_currentUser.Id);
-            entity.IsOnaylandi=true;
-            entity.OnaylayanKullanici = entityKullanici;
-            await Repository.UpdateAsync(entity);
-
-            return ObjectMapper.Map<Sinif, SinifDto>(entity);
+            if(_currentUser.Id is not null)
+            {
+                var entityKullanici=await _kullaniciRepo.FindAsync((Guid)_currentUser.Id);
+                entity.IsOnaylandi=true;
+                entity.OnaylayanKullanici = entityKullanici;
+                await Repository.UpdateAsync(entity);
+            }
+            else
+            {
+                throw new UserFriendlyException("Tekrar giriş yapınız!");
+            }
         }
 
-        public async Task<SinifDto> OgrenciEkleMulti(List<Guid> list,Guid guidSinif)
-        {
-            var entity = await Repository.FindAsync(guidSinif);
-            if(entity == null)
-            {
-                throw new UserFriendlyException("Sınıf bulunamadı");
-            }
-            List<SinifUser> sinifUserList = new List<SinifUser>();
-            foreach (var identityUser in list)
-            {
-                var user=await _kullaniciRepo.FindAsync(identityUser);
-                if(user is not null)
-                {
-                    entity.OgrenciList.Add(user);
-                    var sinifUser = new SinifUser();
-                    sinifUser.SinifId = entity.Id;
-                    sinifUser.UserId = identityUser;
-                    sinifUserList.Add(sinifUser);
-                }
-            }
-            await _sinifUserRepo.InsertManyAsync(sinifUserList);
-            await Repository.UpdateAsync(entity);
-            var res = ObjectMapper.Map<Sinif, SinifDto>(entity);
-            res.OgrenciList = ObjectMapper.Map<List<IdentityUser>, List<IdentityUserDto>>(entity.OgrenciList);
+        //public async Task OgrenciEkleMulti(List<Guid> list,Guid guidSinif)
+        //{
+        //    var entity = await Repository.FindAsync(guidSinif);
+        //    if(entity == null)
+        //    {
+        //        throw new UserFriendlyException("Sınıf bulunamadı");
+        //    }
+        //    List<SinifUser> sinifUserList = new List<SinifUser>();
+        //    foreach (var identityUser in list)
+        //    {
+        //        var user=await _kullaniciRepo.FindAsync(identityUser);
+        //        if(user is not null)
+        //        {
+        //            entity.OgrenciList.Add(user);
+        //            var sinifUser = new SinifUser();
+        //            sinifUser.SinifId = entity.Id;
+        //            sinifUser.UserId = identityUser;
+        //            sinifUserList.Add(sinifUser);
+        //        }
+        //    }
+        //    await _sinifUserRepo.InsertManyAsync(sinifUserList);
+        //    await Repository.UpdateAsync(entity);
+        //   // return ObjectMapper.Map<Sinif,SinifDto>(entity);
+        //}
 
+        public async Task<List<SinifInfoDto>> GetSinifInfo()
+        {
+            var entity= await Repository.GetListAsync();
+            var res=ObjectMapper.Map<List<Sinif>,List<SinifInfoDto>>(entity);
+            foreach(var item in res)
+            {
+                var creator = await _kullaniciRepo.FindAsync(item.CreatorId);
+                item.CreatorUserName = creator.UserName;
+            }
             return res;
-           // return ObjectMapper.Map<Sinif,SinifDto>(entity);
         }
 
 
