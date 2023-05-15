@@ -1,7 +1,7 @@
 ﻿using AutoMapper.Internal.Mappers;
 using SanalVaka.DersDtos;
 using SanalVaka.Dersler;
-using SanalVaka.Many2Many;
+using SanalVaka.Ogrenciler;
 using SanalVaka.Permissions;
 using SanalVaka.SinifDtos;
 using System;
@@ -22,8 +22,8 @@ namespace SanalVaka.Siniflar
     {
         private readonly IRepository<IdentityUser,Guid> _kullaniciRepo;
         private readonly ICurrentUser _currentUser;
-        private readonly IRepository<SinifUser> _sinifUserRepo;
-        public SinifAppService(IRepository<Sinif, Guid> repository,IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser currentUser,IRepository<SinifUser> sinifUserRepo)
+        private readonly IRepository<Ogrenci> _ogrenciRepo;
+        public SinifAppService(IRepository<Sinif, Guid> repository,IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser currentUser,IRepository<Ogrenci> ogrenciRepo)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Siniflar.Default;
@@ -33,24 +33,22 @@ namespace SanalVaka.Siniflar
             DeletePolicyName = SanalVakaPermissions.Siniflar.Delete;
             _kullaniciRepo = kullaniciRepo;
             _currentUser = currentUser;
-            _sinifUserRepo = sinifUserRepo;
+            _ogrenciRepo = ogrenciRepo;
         }
-        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
+        public async Task OgrenciEkleSingle(Guid guidSinif, int ogrenciId)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if(entity == null)
             {
                 throw new UserFriendlyException("Sinif bulunamadı!");
             }
-            var entityOgrenci = await _kullaniciRepo.FindAsync(ogrenciId);
+            var entityOgrenci = await _ogrenciRepo.GetAsync(x=>x.Id==ogrenciId);
             if(entityOgrenci == null)
             {
                 throw new UserFriendlyException("Öğrenci bulunamadı");
             }
-            var sinifUser = new SinifUser();
-            //sinifUser.UserId = entityOgrenci.Id;
-            //sinifUser.SinifId = entity.Id;
-            await _sinifUserRepo.InsertAsync(sinifUser);
+            entity.SinifOgrenciler.Add(entityOgrenci);
+            await Repository.UpdateAsync(entity);
         }
 
         public async Task SinifOnayla(Guid guidSinif)
@@ -65,7 +63,9 @@ namespace SanalVaka.Siniflar
             {
                 var entityKullanici=await _kullaniciRepo.FindAsync((Guid)_currentUser.Id);
                 entity.IsOnaylandi=true;
-                entity.OnaylayanKullanici = entityKullanici;
+                entity.SinifOnayciId = entityKullanici.Id;
+                entity.SinifOnayciAdi = entityKullanici.Name;
+                entity.SinifOnayciUsername = entityKullanici.UserName;
                 await Repository.UpdateAsync(entity);
             }
             else
@@ -74,30 +74,24 @@ namespace SanalVaka.Siniflar
             }
         }
 
-        //public async Task OgrenciEkleMulti(List<Guid> list,Guid guidSinif)
-        //{
-        //    var entity = await Repository.FindAsync(guidSinif);
-        //    if(entity == null)
-        //    {
-        //        throw new UserFriendlyException("Sınıf bulunamadı");
-        //    }
-        //    List<SinifUser> sinifUserList = new List<SinifUser>();
-        //    foreach (var identityUser in list)
-        //    {
-        //        var user=await _kullaniciRepo.FindAsync(identityUser);
-        //        if(user is not null)
-        //        {
-        //            entity.OgrenciList.Add(user);
-        //            var sinifUser = new SinifUser();
-        //            sinifUser.SinifId = entity.Id;
-        //            sinifUser.UserId = identityUser;
-        //            sinifUserList.Add(sinifUser);
-        //        }
-        //    }
-        //    await _sinifUserRepo.InsertManyAsync(sinifUserList);
-        //    await Repository.UpdateAsync(entity);
-        //   // return ObjectMapper.Map<Sinif,SinifDto>(entity);
-        //}
+        public async Task OgrenciEkleMulti(List<int> list, Guid guidSinif)
+        {
+            var entity = await Repository.FindAsync(guidSinif);
+            if (entity == null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            }
+            
+            foreach (var identityUser in list)
+            {
+                var ogrenci = await _ogrenciRepo.GetAsync(x=>x.Id==identityUser);
+                if (ogrenci is not null)
+                {
+                    entity.SinifOgrenciler.Add(ogrenci);
+                }
+            }
+            await Repository.UpdateAsync(entity);
+        }
 
         public async Task<List<SinifInfoDto>> GetSinifInfo()
         {

@@ -2,7 +2,7 @@
 using SanalVaka.Bolumler;
 using SanalVaka.Dersler;
 using SanalVaka.Ogrenciler;
-using SanalVaka.Yetkililer;
+using SanalVaka.Siniflar;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -59,14 +59,9 @@ public class SanalVakaDbContext :
 
     public DbSet<Bolum> Bolumler { get; set; }
     public DbSet<Ders> Dersler { get; set; }
-    //public DbSet<Sinif> Siniflar { get; set; }
+    public DbSet<Sinif> Siniflar { get; set; }
     //public DbSet<DersUser> DersUsers { get; set; }
     //public DbSet<SinifUser> SinifUsers { get; set; }
-    public DbSet<SinifYetkili> SinifYetkililer { get; set; }
-    public DbSet<DersYetkili> DersYetkililer { get; set; }
-    public DbSet<BolumYetkili> BolumYetkililer { get; set; }
-
-    public DbSet<Ogrenci> Ogrenciler { get; set; }
 
 
 

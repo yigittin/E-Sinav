@@ -4,17 +4,13 @@ using System.Text;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
-namespace SanalVaka.Bolumler
+namespace SanalVaka.OgrenciDtos
 {
-    public interface IBolumAppService :
-        ICrudAppService<
-                BolumDto,
-                Guid,
+    public interface IOgrenciAppService : ICrudAppService<OgrenciDto,
+                int,
                 PagedAndSortedResultRequestDto,
-                CreateUpdateBolumDto>
+                CreateUpdateOgrenciDto>
     {
-
     }
-
 
 }

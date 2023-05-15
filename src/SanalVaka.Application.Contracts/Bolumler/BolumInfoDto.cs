@@ -11,7 +11,5 @@ namespace SanalVaka.Bolumler
         public bool IsOnaylandi { get; set; }
         public Guid CreatorId { get; set; }
         public string CreatorUserName { get; set;}
-        public Guid YetkiliId { get; set; }
-        public string YetkiliName { get; set; }
     }
 }

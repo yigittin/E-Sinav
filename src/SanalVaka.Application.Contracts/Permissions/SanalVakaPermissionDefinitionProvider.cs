@@ -21,7 +21,7 @@ public class SanalVakaPermissionDefinitionProvider : PermissionDefinitionProvide
         bolumPermission.AddChild(SanalVakaPermissions.Bolumler.Delete, L("Permission:Bolumler.Delete"));
 
         // DERS PERMISSION
-        var dersPermission = myGroup.AddPermission(SanalVakaPermissions.Dersler.Default, L("Permission:Bolumler"));
+        var dersPermission = myGroup.AddPermission(SanalVakaPermissions.Dersler.Default, L("Permission:Dersler"));
         dersPermission.AddChild(SanalVakaPermissions.Dersler.Create, L("Permission:Dersler.Create"));
         dersPermission.AddChild(SanalVakaPermissions.Dersler.Edit, L("Permission:Dersler.Edit"));
         dersPermission.AddChild(SanalVakaPermissions.Dersler.Delete, L("Permission:Dersler.Delete"));
