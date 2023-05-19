@@ -10,6 +10,5 @@ namespace SanalVaka.Bolumler
     {
         public string Name { get; set; }
         public bool IsOnaylandi { get; set; }
-        public List<DersDto> DersList { get; set; }
     }
 }
