@@ -12,14 +12,17 @@ using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 using Volo.Abp.Identity;
 using Volo.Abp.Users;
-
+using Volo.Abp;
+using Volo.Abp.ObjectMapping;
 
 namespace SanalVaka.Bolumler
 {
     public class BolumAppService : CrudAppService<Bolum, BolumDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateBolumDto>, IBolumAppService
     {
+
         private readonly IRepository<IdentityUser, Guid> _kullaniciRepo;
-        public BolumAppService(IRepository<Bolum, Guid> repository, IRepository<IdentityUser, Guid> kullaniciRepo)
+        private readonly ICurrentUser _currentUser;
+        public BolumAppService(IRepository<Bolum, Guid> repository, IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser curUser)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Bolumler.Default;
@@ -28,6 +31,7 @@ namespace SanalVaka.Bolumler
             UpdatePolicyName = SanalVakaPermissions.Bolumler.Edit;
             DeletePolicyName = SanalVakaPermissions.Bolumler.Delete;
             _kullaniciRepo = kullaniciRepo;
+            _currentUser = curUser;
         }
 
         public async Task<List<BolumInfoDto>> GetBolumlerInfo(int skipCount,
@@ -64,6 +68,18 @@ namespace SanalVaka.Bolumler
                 infoList.Add(res);
             }
             return infoList;
+        }
+        
+        public async Task<BolumInfoDto> GetBolumSingle(Guid id)
+        {
+            var entity = await Repository.GetAsync(id);
+            var res = new BolumInfoDto();
+            res.BolumAdi = entity.BolumAdi;
+            res.IsOnaylandi=entity.IsOnaylandi;
+            res.BolumOnayciAdi=entity.BolumOnayciAdi; 
+            res.Id=entity.Id;
+
+            return res;
         }
         public async Task<BolumInfoDto> NewBolum(CreateUpdateBolumDto input)
         {
@@ -111,6 +127,76 @@ namespace SanalVaka.Bolumler
                 infoList.Count,
                 infoList
             );
+        }
+
+        public async Task<BolumInfoDto> UpdateBolum(UpdateBolumDto input)
+        {
+            var entity=await Repository.GetAsync(x=>x.Id==input.Id&&x.IsDeleted==false);
+            if (entity == null)
+            {
+                throw new UserFriendlyException("Bölüm bulunamadı");
+            }
+
+            entity.BolumAdi=input.BolumAdi;
+            await Repository.UpdateAsync(entity);
+            var res = new BolumInfoDto();
+            res.BolumAdi=entity.BolumAdi;
+
+            return res;
+            
+        }
+        
+        public async Task OnaylaBolum(Guid id)
+        {
+            var entity=await Repository.GetAsync(x=>x.Id== id && x.IsDeleted == false);
+            if (entity == null)
+            {
+                throw new UserFriendlyException("Bölüm bulunamadı");
+            }
+
+            entity.IsOnaylandi=true;
+            entity.BolumOnayciId = _currentUser.Id;
+            entity.BolumOnayciAdi = _currentUser.Name + " "+_currentUser.SurName;
+            entity.BolumOnayciUsername = _currentUser.UserName;
+
+            await Repository.UpdateAsync(entity);
+        }
+
+        public async Task<List<BolumDropDownDto>> GetBolumDropdown()
+        {
+            var entity = await Repository.GetListAsync(x => x.IsDeleted == false);
+            if(entity is not null)
+            {
+                var res=new List<BolumDropDownDto>();
+                foreach(var item in entity)
+                {
+                    var bolumInfo=new BolumDropDownDto();
+                    bolumInfo.Id = item.Id;
+                    bolumInfo.BolumAdi = item.BolumAdi;
+                    res.Add(bolumInfo);
+                }
+                return res;
+            }
+            else
+            {
+                throw new UserFriendlyException("Bölüm listesi boş!");
+            }
+        }
+
+        public async Task YetkiliAta(Guid id,Guid kullaniciId)
+        {
+            var entity = await Repository.GetAsync(id);
+            if(entity is null)
+            {
+                throw new UserFriendlyException("Bölüm Bulunamadı");
+            }
+            var kullanici=await _kullaniciRepo.GetAsync(kullaniciId);
+            if(kullanici is null)
+            {
+                throw new UserFriendlyException("Kullanıcı Bulunamadı");
+            }
+            entity.Yetkililer.Add(kullanici);
+            await Repository.UpdateAsync(entity);
         }
     }
 }
