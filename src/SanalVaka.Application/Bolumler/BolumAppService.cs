@@ -57,13 +57,13 @@ namespace SanalVaka.Bolumler
                     CreatorId=item.CreatorId,
                     BolumAdi=item.BolumAdi,
                     BolumOnayciAdi=item.BolumOnayciAdi,
+                    IsOnaylandi=item.IsOnaylandi,
                     Id=item.Id,
                 };
                 if(res.CreatorId is not null)
                 {
                     var creator = await _kullaniciRepo.FindAsync((Guid)res.CreatorId);
                     res.CreatorUserName = creator.UserName;
-
                 }
                 infoList.Add(res);
             }
@@ -113,6 +113,7 @@ namespace SanalVaka.Bolumler
                     CreatorId = item.CreatorId,
                     BolumAdi = item.BolumAdi,
                     BolumOnayciAdi = item.BolumOnayciAdi,
+                    IsOnaylandi = item.IsOnaylandi,
                     Id = item.Id,
                 };
                 if (res.CreatorId is not null)
