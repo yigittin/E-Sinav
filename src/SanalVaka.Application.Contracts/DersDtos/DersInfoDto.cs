@@ -17,8 +17,8 @@ namespace SanalVaka.DersDtos
         public Guid? CreatorId { get; set; }
         public string CreatorUserName { get; set; }
         public string? DersOnayciAdi { get; set; }
-        public Guid DersOnayciId { get; set; }
-        public List<Guid> YetkiliId { get; set; }
-        public virtual List<IdentityUserDto> Yetkililer { get;set; }
+        public Guid? DersOnayciId { get; set; }
+        public List<Guid>? YetkiliId { get; set; }
+        public virtual List<IdentityUserDto>? Yetkililer { get;set; }
     }
 }

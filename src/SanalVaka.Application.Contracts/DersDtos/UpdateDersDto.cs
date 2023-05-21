@@ -16,6 +16,7 @@ namespace SanalVaka.DersDtos
         public string DersAdi { get; set; }
         [Required]
         public Guid BolumId { get; set; }
-        public List<Guid> YetkiliId { get; set; }
+        public List<Guid>? YetkiliId { get; set; }
+        public bool IsOnaylandi { get; set; }
     }
 }

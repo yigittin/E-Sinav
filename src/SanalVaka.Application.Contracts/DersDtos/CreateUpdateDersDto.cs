@@ -13,6 +13,5 @@ namespace SanalVaka.DersDtos
         public string DersAdi { get; set; }
         [Required]
         public Guid BolumId { get; set; }
-        public List<SinifDto> SinifList { get; set; }
     }
 }

@@ -94,6 +94,33 @@ namespace SanalVaka.Dersler
             await Repository.InsertAsync(ders);
         }
 
+        public async Task UpdateDersInfo(UpdateDersDto input)
+        {
+            var entity = await Repository.GetAsync(input.Id);
+            var bolum=await _bolumRepository.GetAsync(input.BolumId);
+            if(entity is null)
+            {
+                throw new UserFriendlyException("Ders bulunamadı");
+            }
+            if(bolum is null)
+            {
+                throw new UserFriendlyException("Bölüm bulunamadı");
+            }
+            //var res = new DersInfoDto();
+            //res.BolumId = entity.BolumId;
+            //res.BolumName = bolum.BolumAdi;
+            //res.Id = entity.Id;
+            //res.DersAdi = entity.DersAdi;
+            //res.IsOnaylandi = entity.IsOnaylandi;
+
+            entity.BolumId = input.BolumId;
+            entity.IsOnaylandi = input.IsOnaylandi;
+            entity.Bolum = bolum;
+            entity.DersAdi= input.DersAdi;
+
+            await Repository.UpdateAsync(entity);
+        }
+
         public async Task UpdateDers(UpdateDersDto input)
         {
             var entity = await Repository.GetAsync(input.Id);
@@ -215,7 +242,7 @@ namespace SanalVaka.Dersler
 
                 dersInfo.DersAdi = item.DersAdi;
                 dersInfo.DersOnayciAdi=item.DersOnayciAdi;
-                dersInfo.DersOnayciId=item.DersOnayciId;
+                dersInfo.DersOnayciId= (Guid)item.DersOnayciId;
                 dersInfo.BolumId=item.BolumId;
                 dersInfo.BolumName = item.Bolum.BolumAdi;
                 dersInfo.CreatorId = item.CreatorId;
@@ -239,6 +266,11 @@ namespace SanalVaka.Dersler
 
             foreach (var item in entity)
             {
+                var bolum = await _bolumRepository.GetAsync(item.BolumId);
+                if(bolum is null)
+                {
+                    throw new UserFriendlyException("Bölüm bulunamadı");
+                }
                 var res = new DersInfoDto()
                 {
                     CreatorId = item.CreatorId,
@@ -246,7 +278,7 @@ namespace SanalVaka.Dersler
                     DersOnayciAdi = item.DersOnayciAdi,
                     IsOnaylandi = item.IsOnaylandi,
                     BolumId = item.BolumId,
-                    BolumName = item.Bolum.BolumAdi,
+                    BolumName = bolum.BolumAdi,
                     Id = item.Id,
                 };
                 if (res.CreatorId is not null)
@@ -261,6 +293,20 @@ namespace SanalVaka.Dersler
                 infoList.Count,
                 infoList
             );
+        }
+
+        public async Task<DersInfoDto> GetDersSingleById(Guid id)
+        {
+            var entity = await Repository.GetAsync(id);
+            var bolum = await _bolumRepository.GetAsync(entity.BolumId);
+            var res = new DersInfoDto();
+            res.BolumId = entity.BolumId;
+            res.BolumName = bolum.BolumAdi;
+            res.Id = entity.Id;
+            res.DersAdi= entity.DersAdi;    
+            res.IsOnaylandi = entity.IsOnaylandi;   
+
+            return res;
         }
     }
 
