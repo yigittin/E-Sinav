@@ -26,16 +26,16 @@ public static class SanalVakaEfCoreEntityExtensionMappings
                  * FOR A HIGH LEVEL API TO DEFINE EXTRA PROPERTIES TO ENTITIES OF THE USED MODULES
                  *
                  * Example: Map a property to a table field:
-
+                */
                      ObjectExtensionManager.Instance
-                         .MapEfCoreProperty<IdentityUser, string>(
-                             "MyProperty",
+                         .MapEfCoreProperty<IdentityUser, bool>(
+                             "Ogrenci",
                              (entityBuilder, propertyBuilder) =>
                              {
-                                 propertyBuilder.HasMaxLength(128);
                              }
                          );
 
+                    /*
                  * See the documentation for more:
                  * https://docs.abp.io/en/abp/latest/Customizing-Application-Modules-Extending-Entities
                  */
