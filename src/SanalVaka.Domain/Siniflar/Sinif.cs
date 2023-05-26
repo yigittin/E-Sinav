@@ -19,8 +19,8 @@ namespace SanalVaka.Siniflar
         public Guid DersId { get; set; }
         [ForeignKey("DersId")]
         public virtual Ders Ders { get; set; }
-        public virtual ICollection<Ogrenci> SinifOgrenciler { get; set; }
-        public virtual ICollection<IdentityUser> Yetkililer { get; set; }
+        public virtual ICollection<Ogrenci>? SinifOgrenciler { get; set; }
+        public virtual ICollection<IdentityUser>? Yetkililer { get; set; }
         public bool IsOnaylandi { get; set; }
         public Guid SinifOnayciId { get; set; }
         public string SinifOnayciUsername { get; set; }

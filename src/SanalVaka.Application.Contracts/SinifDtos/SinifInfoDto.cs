@@ -15,8 +15,8 @@ namespace SanalVaka.SinifDtos
         public string DersAdi { get; set; }
         public bool IsOnaylandi { get; set; }
         public string OnaylayanKullaniciAdi { get; set; }
-        public List<OgrenciDto> OgrenciList { get; set; }
-        public List<SinifYetkiliDto> YetkiliList { get; set; }
+        public List<OgrenciSelectionDto>? OgrenciList { get; set; }
+        public List<SinifYetkiliDto>? YetkiliList { get; set; }
         public string CreatorUserName { get; set; }
         public Guid CreatorId { get; set; }
     }

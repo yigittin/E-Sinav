@@ -34,11 +34,18 @@ public static class SanalVakaEfCoreEntityExtensionMappings
                              {
                              }
                          );
+                    ObjectExtensionManager.Instance
+                        .MapEfCoreProperty<IdentityUser, string>(
+                            "OgrenciNo",
+                            (entityBuilder, propertyBuilder) =>
+                            {
+                            }
+                        );
 
-                    /*
-                 * See the documentation for more:
-                 * https://docs.abp.io/en/abp/latest/Customizing-Application-Modules-Extending-Entities
-                 */
+            /*
+         * See the documentation for more:
+         * https://docs.abp.io/en/abp/latest/Customizing-Application-Modules-Extending-Entities
+         */
         });
     }
 }

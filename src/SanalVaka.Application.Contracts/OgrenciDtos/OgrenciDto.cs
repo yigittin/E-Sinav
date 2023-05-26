@@ -10,10 +10,11 @@ using Volo.Abp.Application.Dtos;
 
 namespace SanalVaka.OgrenciDtos
 {
-    public class OgrenciDto:FullAuditedEntityDto<int>
+    public class OgrenciDto:FullAuditedEntityDto<Guid>
     {
         public string OgrenciNo { get; set; }
         public Guid UserId { get; set; }
+        public string OgrenciAdi { get; set; }
         public virtual ICollection<DersInfoDto> Dersler { get; set; }
         public virtual ICollection<SinifInfoDto> Siniflar { get; set; }
     }

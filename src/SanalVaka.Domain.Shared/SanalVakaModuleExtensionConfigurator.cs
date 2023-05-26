@@ -71,16 +71,26 @@ public static class SanalVakaModuleExtensionConfigurator
          */
 
         ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+            {
+                identity.ConfigureUser(user =>
                 {
-                    identity.ConfigureUser(user =>
-                    {
-                        user.AddOrUpdateProperty<bool>("Ogrenci", property =>
-                            {
-                                property.Attributes.Add(new RequiredAttribute());
+                    user.AddOrUpdateProperty<bool>("Ogrenci", property =>
+                        {
+                            property.Attributes.Add(new RequiredAttribute());
 
-                                property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
-                            });
+                            property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
+                        });
+                });
+            });
+        ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+            {
+                identity.ConfigureUser(user =>
+                {
+                    user.AddOrUpdateProperty<string>("OgrenciNo", property =>
+                    {
+                        property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
                     });
                 });
+            });
     }
 }

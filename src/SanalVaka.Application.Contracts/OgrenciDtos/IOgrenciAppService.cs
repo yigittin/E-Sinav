@@ -7,7 +7,7 @@ using Volo.Abp.Application.Services;
 namespace SanalVaka.OgrenciDtos
 {
     public interface IOgrenciAppService : ICrudAppService<OgrenciDto,
-                int,
+                Guid,
                 PagedAndSortedResultRequestDto,
                 CreateUpdateOgrenciDto>
     {

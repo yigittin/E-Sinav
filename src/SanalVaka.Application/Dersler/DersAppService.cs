@@ -17,6 +17,12 @@ using Volo.Abp.Users;
 using Volo.Abp.Linq;
 using System.Linq.Dynamic.Core;
 using SanalVaka.Siniflar;
+using Polly;
+using Microsoft.Extensions.Configuration;
+using SanalVaka.OgrenciDtos;
+using System.Data.SqlClient;
+using SanalVaka.SinifDtos;
+using Volo.Abp.Uow;
 
 namespace SanalVaka.Dersler
 {
@@ -26,7 +32,15 @@ namespace SanalVaka.Dersler
         private readonly IRepository<Ogrenci> _ogrenciRepo;
         private readonly ICurrentUser _currentUser;
         private readonly IRepository<Bolum,Guid> _bolumRepository;
-        public DersAppService(IRepository<Ders, Guid> repository, IRepository<IdentityUser, Guid> kullaniciRepo, ICurrentUser currentUser,IRepository<Ogrenci> ogrenciRepo,IRepository<Bolum, Guid> bolumRepo)
+        private readonly IRepository<Sinif, Guid> _sinifRepository;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
+        public DersAppService(IRepository<Ders, Guid> repository,
+            IRepository<IdentityUser, Guid> kullaniciRepo,
+            ICurrentUser currentUser,
+            IRepository<Ogrenci> ogrenciRepo,
+            IRepository<Bolum, Guid> bolumRepo,
+            IRepository<Sinif, Guid> sinifRepo,
+            IUnitOfWorkManager uow)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Dersler.Default;
@@ -38,6 +52,8 @@ namespace SanalVaka.Dersler
             _currentUser = currentUser;
             _ogrenciRepo= ogrenciRepo;  
             _bolumRepository = bolumRepo;
+            _sinifRepository = sinifRepo;
+            _unitOfWorkManager = uow;
         }
         public async Task<List<DersInfoDto>> GetDersInfo(int skipCount,
         int maxResultCount,
@@ -93,7 +109,6 @@ namespace SanalVaka.Dersler
 
             await Repository.InsertAsync(ders);
         }
-
         public async Task UpdateDersInfo(UpdateDersDto input)
         {
             var entity = await Repository.GetAsync(input.Id);
@@ -120,7 +135,6 @@ namespace SanalVaka.Dersler
 
             await Repository.UpdateAsync(entity);
         }
-
         public async Task UpdateDers(UpdateDersDto input)
         {
             var entity = await Repository.GetAsync(input.Id);
@@ -151,15 +165,16 @@ namespace SanalVaka.Dersler
             await Repository.UpdateAsync(entity);
 
         }
-
-        public async Task OgrenciEkleSingle(Guid guidSinif, int ogrenciId)
+        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if (entity == null)
             {
                 throw new UserFriendlyException("Sinif bulunamadı!");
             }
-            var entityOgrenci = await _ogrenciRepo.GetAsync(x => x.Id == ogrenciId);
+            var entityOgrenci = await _ogrenciRepo.GetAsync(x => x.UserId == ogrenciId);
+
+
             if (entityOgrenci == null)
             {
                 throw new UserFriendlyException("Öğrenci bulunamadı");
@@ -167,8 +182,7 @@ namespace SanalVaka.Dersler
             entity.DersOgrencileri.Add(entityOgrenci);
             await Repository.UpdateAsync(entity);
         }
-
-        public async Task OgrenciEkleMulti(List<int> list, Guid guidSinif)
+        public async Task OgrenciEkleMulti(List<Guid> list, Guid guidSinif)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if (entity == null)
@@ -178,7 +192,7 @@ namespace SanalVaka.Dersler
 
             foreach (var identityUser in list)
             {
-                var ogrenci = await _ogrenciRepo.GetAsync(x => x.Id == identityUser);
+                var ogrenci = await _ogrenciRepo.GetAsync(x => x.UserId == identityUser);
                 if (ogrenci is not null)
                 {
                     entity.DersOgrencileri.Add(ogrenci);
@@ -186,7 +200,6 @@ namespace SanalVaka.Dersler
             }
             await Repository.UpdateAsync(entity);
         }
-
         public async Task DersOnayla(Guid guidDers)
         {
             var entity = await Repository.FindAsync(guidDers);
@@ -209,7 +222,6 @@ namespace SanalVaka.Dersler
                 throw new UserFriendlyException("Tekrar giriş yapınız!");
             }
         }
-
         public async Task YetkiliEkle(Guid dersId,List<Guid> yetkiliId)
         {
             var entity=await Repository.FindAsync(dersId);
@@ -230,7 +242,6 @@ namespace SanalVaka.Dersler
 
             await Repository.UpdateAsync(entity);
         }
-
         public async Task<List<DersInfoDto>> GetDersDropdown()
         {
             var entity = await Repository.GetListAsync();
@@ -294,7 +305,6 @@ namespace SanalVaka.Dersler
                 infoList
             );
         }
-
         public async Task<DersInfoDto> GetDersSingleById(Guid id)
         {
             var entity = await Repository.GetAsync(id);
@@ -307,6 +317,155 @@ namespace SanalVaka.Dersler
             res.IsOnaylandi = entity.IsOnaylandi;   
 
             return res;
+        }
+        public async Task<List<OgrenciSelectionDto>> GetOgrenciList(Guid dersId)
+        {
+            await OgrenciRepoGuncelle();
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU WHERE Ogrenci=1 OUTER JOIN DersOgrenciler DO ON DO.DersOgrencileriId=Id AND DO.DerslerId={dersId}";
+            var OgrenciList = new List<OgrenciSelectionDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader =await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var ogrenci=new OgrenciSelectionDto();
+                        ogrenci.UserId = Guid.Parse(reader["Id"].ToString());
+                        ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+
+                        OgrenciList.Add(ogrenci);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+
+            return OgrenciList;
+        }
+        public async Task<List<OgrenciSelectionDto>> GetDersOgrenciList(Guid dersId)
+        {
+            var connectionString = new ConfigurationManager().GetConnectionString("Default");
+            var sqlQuery = $@"SELECT DO.DersOgrencileriId as 'OgrenciId',
+                            DO.DerslerId as 'DersId',
+                            AU.Name +' '+AU.Surname as 'OgrenciAdi',
+                            AU.OgrenciNo as 'OgrenciNo',                            
+                            FROM 
+                            DersOgrenciler DO 
+                            WHERE DO.DerslerId={dersId}  
+                            INNER JOIN AbpUsers AU ON AU.Id=DO.DersOgrencilerId";
+            var OgrenciList = new List<OgrenciSelectionDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var ogrenci = new OgrenciSelectionDto();
+                        ogrenci.UserId = Guid.Parse(reader["OgrenciId"].ToString());
+                        ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+
+                        OgrenciList.Add(ogrenci);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+
+            return OgrenciList;
+        }
+        public async Task<List<SinifInfoDto>> GetDersSiniflar(Guid dersId)
+        {
+            var entity=await _sinifRepository.GetListAsync(x=>x.DersId==dersId);
+
+            var sinifList=new List<SinifInfoDto>();
+            if(entity is null)
+            {
+                return sinifList;
+            }
+
+            foreach (var item in entity)
+            {
+                var sinif = new SinifInfoDto();
+
+                sinif.DersId = item.DersId;
+                sinif.CreatorId = item.CreatorId ?? Guid.Empty;
+                sinif.SinifAdi = item.SinifName;
+                sinif.SinifLimit=item.SinifLimit;
+                sinifList.Add(sinif);
+            }
+
+            return sinifList;
+            
+        }
+        public async Task OgrenciRepoGuncelle()
+        {
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT Id,Name,Surname,OgrenciNo FROM AbpUsers AU WHERE Ogrenci=1";
+            var OgrenciList = new List<Ogrenci>();
+            using (var unitOfWork = _unitOfWorkManager.Begin())
+            {
+                var entity = await _ogrenciRepo.GetListAsync();
+                foreach (var item in entity)
+                {
+                    OgrenciList.Add(item);
+                }
+                await _ogrenciRepo.HardDeleteAsync(OgrenciList);
+
+                await unitOfWork.CompleteAsync();
+            }
+            OgrenciList.Clear();
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+                
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (reader.Read())
+                    {
+                        var ogrenci = new Ogrenci();
+                        ogrenci.UserId = Guid.Parse(reader["Id"].ToString());
+                        ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+                        OgrenciList.Add(ogrenci);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+            await _ogrenciRepo.InsertManyAsync(OgrenciList);
         }
     }
 
