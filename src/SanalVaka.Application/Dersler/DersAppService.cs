@@ -23,6 +23,7 @@ using SanalVaka.OgrenciDtos;
 using System.Data.SqlClient;
 using SanalVaka.SinifDtos;
 using Volo.Abp.Uow;
+using SanalVaka.Many2Many;
 
 namespace SanalVaka.Dersler
 {
@@ -34,13 +35,15 @@ namespace SanalVaka.Dersler
         private readonly IRepository<Bolum,Guid> _bolumRepository;
         private readonly IRepository<Sinif, Guid> _sinifRepository;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
+        private readonly IRepository<DersOgrenci> _dersOgrenciRepo;
         public DersAppService(IRepository<Ders, Guid> repository,
             IRepository<IdentityUser, Guid> kullaniciRepo,
             ICurrentUser currentUser,
             IRepository<Ogrenci> ogrenciRepo,
             IRepository<Bolum, Guid> bolumRepo,
             IRepository<Sinif, Guid> sinifRepo,
-            IUnitOfWorkManager uow)
+            IUnitOfWorkManager uow,
+            IRepository<DersOgrenci> dersOgrenci)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Dersler.Default;
@@ -54,6 +57,7 @@ namespace SanalVaka.Dersler
             _bolumRepository = bolumRepo;
             _sinifRepository = sinifRepo;
             _unitOfWorkManager = uow;
+            _dersOgrenciRepo = dersOgrenci;
         }
         public async Task<List<DersInfoDto>> GetDersInfo(int skipCount,
         int maxResultCount,
@@ -179,7 +183,11 @@ namespace SanalVaka.Dersler
             {
                 throw new UserFriendlyException("Öğrenci bulunamadı");
             }
-            entity.DersOgrencileri.Add(entityOgrenci);
+            var dersOgrenci = new DersOgrenci();
+            dersOgrenci.DersId = entity.Id;
+            dersOgrenci.OgrenciId = entityOgrenci.UserId;
+            dersOgrenci.IsDeleted = false;
+            await _dersOgrenciRepo.InsertAsync(dersOgrenci);
             await Repository.UpdateAsync(entity);
         }
         public async Task OgrenciEkleMulti(List<Guid> list, Guid guidSinif)
@@ -189,15 +197,19 @@ namespace SanalVaka.Dersler
             {
                 throw new UserFriendlyException("Sınıf bulunamadı");
             }
-
+            var dersOgrenciList = new List<DersOgrenci>();
             foreach (var identityUser in list)
             {
                 var ogrenci = await _ogrenciRepo.GetAsync(x => x.UserId == identityUser);
                 if (ogrenci is not null)
                 {
-                    entity.DersOgrencileri.Add(ogrenci);
+                    var dersOgrenci = new DersOgrenci();
+                    dersOgrenci.DersId = entity.Id;
+                    dersOgrenci.OgrenciId = ogrenci.UserId;
+                    dersOgrenci.IsDeleted = false;
                 }
             }
+            await _dersOgrenciRepo.InsertManyAsync(dersOgrenciList);
             await Repository.UpdateAsync(entity);
         }
         public async Task DersOnayla(Guid guidDers)
@@ -322,7 +334,9 @@ namespace SanalVaka.Dersler
         {
             await OgrenciRepoGuncelle();
             var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
-            var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU WHERE Ogrenci=1 OUTER JOIN DersOgrenciler DO ON DO.DersOgrencileriId=Id AND DO.DerslerId={dersId}";
+            var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU 
+            FULL OUTER JOIN DersOgrenciler DO ON DO.OgrenciId=AU.Id AND DO.DersId='{dersId}'
+            WHERE Ogrenci=1";
             var OgrenciList = new List<OgrenciSelectionDto>();
 
             using (SqlConnection connection =
@@ -354,15 +368,15 @@ namespace SanalVaka.Dersler
         }
         public async Task<List<OgrenciSelectionDto>> GetDersOgrenciList(Guid dersId)
         {
-            var connectionString = new ConfigurationManager().GetConnectionString("Default");
-            var sqlQuery = $@"SELECT DO.DersOgrencileriId as 'OgrenciId',
-                            DO.DerslerId as 'DersId',
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT DO.OgrenciId as 'OgrenciId',
+                            DO.DersId as 'DersId',
                             AU.Name +' '+AU.Surname as 'OgrenciAdi',
-                            AU.OgrenciNo as 'OgrenciNo',                            
+                            AU.OgrenciNo as 'OgrenciNo'                         
                             FROM 
                             DersOgrenciler DO 
-                            WHERE DO.DerslerId={dersId}  
-                            INNER JOIN AbpUsers AU ON AU.Id=DO.DersOgrencilerId";
+                            INNER JOIN AbpUsers AU ON AU.Id=DO.OgrenciId
+                            WHERE DO.DersId='{dersId}'";
             var OgrenciList = new List<OgrenciSelectionDto>();
 
             using (SqlConnection connection =

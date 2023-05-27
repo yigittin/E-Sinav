@@ -24,21 +24,6 @@ namespace SanalVaka.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.Property<int>("DersOgrencileriId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("OgrenciId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("DersOgrencileriId", "OgrenciId");
-
-                    b.HasIndex("OgrenciId");
-
-                    b.ToTable("DersOgrenci");
-                });
-
             modelBuilder.Entity("OgrenciSinif", b =>
                 {
                     b.Property<int>("SinifOgrencilerId")
@@ -189,6 +174,44 @@ namespace SanalVaka.Migrations
                     b.HasIndex("BolumId");
 
                     b.ToTable("Dersler");
+                });
+
+            modelBuilder.Entity("SanalVaka.Many2Many.DersOgrenci", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid>("DersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OgrenciId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DersOgrenciler");
                 });
 
             modelBuilder.Entity("SanalVaka.Ogrenciler.Ogrenci", b =>
@@ -2005,21 +2028,6 @@ namespace SanalVaka.Migrations
                     b.HasKey("TenantId", "Name");
 
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
-                });
-
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.HasOne("SanalVaka.Ogrenciler.Ogrenci", null)
-                        .WithMany()
-                        .HasForeignKey("DersOgrencileriId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Dersler.Ders", null)
-                        .WithMany()
-                        .HasForeignKey("OgrenciId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("OgrenciSinif", b =>

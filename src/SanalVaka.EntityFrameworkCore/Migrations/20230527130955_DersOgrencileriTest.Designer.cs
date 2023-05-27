@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SanalVaka.Migrations
 {
     [DbContext(typeof(SanalVakaDbContext))]
-    [Migration("20230520234123_TestOgrenciler")]
-    partial class TestOgrenciler
+    [Migration("20230527130955_DersOgrencileriTest")]
+    partial class DersOgrencileriTest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,21 +26,6 @@ namespace SanalVaka.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.Property<int>("DersOgrencileriId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("DerslerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("DersOgrencileriId", "DerslerId");
-
-                    b.HasIndex("DerslerId");
-
-                    b.ToTable("DersOgrenci");
-                });
 
             modelBuilder.Entity("OgrenciSinif", b =>
                 {
@@ -158,14 +143,12 @@ namespace SanalVaka.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DersOnayciAdi")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("DersOnayciId")
+                    b.Property<Guid?>("DersOnayciId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DersOnayciUsername")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExtraProperties")
@@ -194,6 +177,44 @@ namespace SanalVaka.Migrations
                     b.HasIndex("BolumId");
 
                     b.ToTable("Dersler");
+                });
+
+            modelBuilder.Entity("SanalVaka.Many2Many.DersOgrenci", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("CreationTime");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CreatorId");
+
+                    b.Property<Guid>("DersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("LastModificationTime");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("LastModifierId");
+
+                    b.Property<Guid>("OgrenciId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DersOgrenciler");
                 });
 
             modelBuilder.Entity("SanalVaka.Ogrenciler.Ogrenci", b =>
@@ -1113,6 +1134,12 @@ namespace SanalVaka.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("NormalizedUserName");
 
+                    b.Property<bool>("Ogrenci")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OgrenciNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
@@ -2004,21 +2031,6 @@ namespace SanalVaka.Migrations
                     b.HasKey("TenantId", "Name");
 
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
-                });
-
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.HasOne("SanalVaka.Ogrenciler.Ogrenci", null)
-                        .WithMany()
-                        .HasForeignKey("DersOgrencileriId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Dersler.Ders", null)
-                        .WithMany()
-                        .HasForeignKey("DerslerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("OgrenciSinif", b =>

@@ -19,7 +19,6 @@ namespace SanalVaka.Ogrenciler
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public virtual IdentityUser User { get; set; }
-        public virtual ICollection<Ders>? Dersler { get; set; }
         public virtual ICollection<Sinif>? Siniflar { get; set; }
     }
 }

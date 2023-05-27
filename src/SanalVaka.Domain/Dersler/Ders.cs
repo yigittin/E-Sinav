@@ -17,8 +17,6 @@ namespace SanalVaka.Dersler
         public Guid BolumId { get; set; }
         [ForeignKey("BolumId")]
         public virtual Bolum Bolum { get; set; }
-        [ForeignKey("OgrenciId")]
-        public virtual ICollection<Ogrenci>? DersOgrencileri { get; set; }
         public virtual ICollection<IdentityUser>? Yetkililer { get; set; }
         public bool IsOnaylandi { get; set; }
         public Guid? DersOnayciId { get; set; }

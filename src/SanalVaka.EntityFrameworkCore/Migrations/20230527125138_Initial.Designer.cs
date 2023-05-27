@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SanalVaka.Migrations
 {
     [DbContext(typeof(SanalVakaDbContext))]
-    [Migration("20230513162632_TumYetkililer")]
-    partial class TumYetkililer
+    [Migration("20230527125138_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,36 +26,6 @@ namespace SanalVaka.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("DersDersYetkili", b =>
-                {
-                    b.Property<int>("DersYetkililerId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("DerslerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("DersYetkililerId", "DerslerId");
-
-                    b.HasIndex("DerslerId");
-
-                    b.ToTable("DersDersYetkili");
-                });
-
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.Property<int>("DersOgrencileriId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("DerslerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("DersOgrencileriId", "DerslerId");
-
-                    b.HasIndex("DerslerId");
-
-                    b.ToTable("DersOgrenci");
-                });
 
             modelBuilder.Entity("OgrenciSinif", b =>
                 {
@@ -79,6 +49,15 @@ namespace SanalVaka.Migrations
 
                     b.Property<string>("BolumAdi")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BolumOnayciAdi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("BolumOnayciId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BolumOnayciUsername")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -112,6 +91,9 @@ namespace SanalVaka.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsOnaylandi")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -160,6 +142,15 @@ namespace SanalVaka.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("DersOnayciAdi")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("DersOnayciId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DersOnayciUsername")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExtraProperties")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
@@ -169,6 +160,9 @@ namespace SanalVaka.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsOnaylandi")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -183,6 +177,28 @@ namespace SanalVaka.Migrations
                     b.HasIndex("BolumId");
 
                     b.ToTable("Dersler");
+                });
+
+            modelBuilder.Entity("SanalVaka.Many2Many.DersOgrenci", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("DersId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OgrenciId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DersOgrenci");
                 });
 
             modelBuilder.Entity("SanalVaka.Ogrenciler.Ogrenci", b =>
@@ -275,6 +291,9 @@ namespace SanalVaka.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
 
+                    b.Property<Guid>("DersId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ExtraProperties")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
@@ -284,6 +303,9 @@ namespace SanalVaka.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("IsDeleted");
+
+                    b.Property<bool>("IsOnaylandi")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2")
@@ -300,228 +322,22 @@ namespace SanalVaka.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Sinif");
-                });
-
-            modelBuilder.Entity("SanalVaka.Yetkililer.BolumYetkili", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<Guid?>("BolumId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("BolumYetkiliId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<string>("ExtraProperties")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("OgretmenNo")
+                    b.Property<string>("SinifOnayciAdi")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("SinifOnayciId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("BolumId");
-
-                    b.HasIndex("BolumYetkiliId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("BolumYetkililer");
-                });
-
-            modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<int?>("DersYetkiliId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ExtraProperties")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("OgretmenNo")
+                    b.Property<string>("SinifOnayciUsername")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DersYetkiliId");
+                    b.HasIndex("DersId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DersYetkililer");
-                });
-
-            modelBuilder.Entity("SanalVaka.Yetkililer.SinifYetkili", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)")
-                        .HasColumnName("ConcurrencyStamp");
-
-                    b.Property<DateTime>("CreationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("CreationTime");
-
-                    b.Property<Guid?>("CreatorId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("CreatorId");
-
-                    b.Property<Guid?>("DeleterId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("DeleterId");
-
-                    b.Property<DateTime?>("DeletionTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("DeletionTime");
-
-                    b.Property<string>("ExtraProperties")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("ExtraProperties");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false)
-                        .HasColumnName("IsDeleted");
-
-                    b.Property<DateTime?>("LastModificationTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("LastModificationTime");
-
-                    b.Property<Guid?>("LastModifierId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("LastModifierId");
-
-                    b.Property<string>("OgretmenNo")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SinifYetkililer");
-                });
-
-            modelBuilder.Entity("SinifSinifYetkili", b =>
-                {
-                    b.Property<int>("SinifYetkililerId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("SiniflarId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("SinifYetkililerId", "SiniflarId");
-
-                    b.HasIndex("SiniflarId");
-
-                    b.ToTable("SinifSinifYetkili");
+                    b.ToTable("Siniflar");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
@@ -1202,6 +1018,9 @@ namespace SanalVaka.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("AccessFailedCount");
 
+                    b.Property<Guid?>("BolumId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasMaxLength(40)
@@ -1223,6 +1042,9 @@ namespace SanalVaka.Migrations
                     b.Property<DateTime?>("DeletionTime")
                         .HasColumnType("datetime2")
                         .HasColumnName("DeletionTime");
+
+                    b.Property<Guid?>("DersId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -1296,6 +1118,12 @@ namespace SanalVaka.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasColumnName("NormalizedUserName");
 
+                    b.Property<bool>("Ogrenci")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OgrenciNo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)")
@@ -1321,6 +1149,9 @@ namespace SanalVaka.Migrations
                     b.Property<bool>("ShouldChangePasswordOnNextLogin")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("SinifId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Surname")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)")
@@ -1344,11 +1175,17 @@ namespace SanalVaka.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BolumId");
+
+                    b.HasIndex("DersId");
+
                     b.HasIndex("Email");
 
                     b.HasIndex("NormalizedEmail");
 
                     b.HasIndex("NormalizedUserName");
+
+                    b.HasIndex("SinifId");
 
                     b.HasIndex("UserName");
 
@@ -2180,36 +2017,6 @@ namespace SanalVaka.Migrations
                     b.ToTable("AbpTenantConnectionStrings", (string)null);
                 });
 
-            modelBuilder.Entity("DersDersYetkili", b =>
-                {
-                    b.HasOne("SanalVaka.Yetkililer.DersYetkili", null)
-                        .WithMany()
-                        .HasForeignKey("DersYetkililerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Dersler.Ders", null)
-                        .WithMany()
-                        .HasForeignKey("DerslerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("DersOgrenci", b =>
-                {
-                    b.HasOne("SanalVaka.Ogrenciler.Ogrenci", null)
-                        .WithMany()
-                        .HasForeignKey("DersOgrencileriId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Dersler.Ders", null)
-                        .WithMany()
-                        .HasForeignKey("DerslerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("OgrenciSinif", b =>
                 {
                     b.HasOne("SanalVaka.Ogrenciler.Ogrenci", null)
@@ -2247,64 +2054,15 @@ namespace SanalVaka.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SanalVaka.Yetkililer.BolumYetkili", b =>
+            modelBuilder.Entity("SanalVaka.Siniflar.Sinif", b =>
                 {
-                    b.HasOne("SanalVaka.Bolumler.Bolum", null)
-                        .WithMany("BolumYetkililer")
-                        .HasForeignKey("BolumId");
-
-                    b.HasOne("SanalVaka.Yetkililer.BolumYetkili", null)
-                        .WithMany("BolumYetkililer")
-                        .HasForeignKey("BolumYetkiliId");
-
-                    b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
+                    b.HasOne("SanalVaka.Dersler.Ders", "Ders")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("DersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
-                {
-                    b.HasOne("SanalVaka.Yetkililer.DersYetkili", null)
-                        .WithMany("DersYetkililer")
-                        .HasForeignKey("DersYetkiliId");
-
-                    b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SanalVaka.Yetkililer.SinifYetkili", b =>
-                {
-                    b.HasOne("Volo.Abp.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SinifSinifYetkili", b =>
-                {
-                    b.HasOne("SanalVaka.Yetkililer.SinifYetkili", null)
-                        .WithMany()
-                        .HasForeignKey("SinifYetkililerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SanalVaka.Siniflar.Sinif", null)
-                        .WithMany()
-                        .HasForeignKey("SiniflarId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Ders");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
@@ -2341,6 +2099,21 @@ namespace SanalVaka.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Volo.Abp.Identity.IdentityUser", b =>
+                {
+                    b.HasOne("SanalVaka.Bolumler.Bolum", null)
+                        .WithMany("Yetkililer")
+                        .HasForeignKey("BolumId");
+
+                    b.HasOne("SanalVaka.Dersler.Ders", null)
+                        .WithMany("Yetkililer")
+                        .HasForeignKey("DersId");
+
+                    b.HasOne("SanalVaka.Siniflar.Sinif", null)
+                        .WithMany("Yetkililer")
+                        .HasForeignKey("SinifId");
                 });
 
             modelBuilder.Entity("Volo.Abp.Identity.IdentityUserClaim", b =>
@@ -2451,17 +2224,17 @@ namespace SanalVaka.Migrations
 
             modelBuilder.Entity("SanalVaka.Bolumler.Bolum", b =>
                 {
-                    b.Navigation("BolumYetkililer");
+                    b.Navigation("Yetkililer");
                 });
 
-            modelBuilder.Entity("SanalVaka.Yetkililer.BolumYetkili", b =>
+            modelBuilder.Entity("SanalVaka.Dersler.Ders", b =>
                 {
-                    b.Navigation("BolumYetkililer");
+                    b.Navigation("Yetkililer");
                 });
 
-            modelBuilder.Entity("SanalVaka.Yetkililer.DersYetkili", b =>
+            modelBuilder.Entity("SanalVaka.Siniflar.Sinif", b =>
                 {
-                    b.Navigation("DersYetkililer");
+                    b.Navigation("Yetkililer");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
