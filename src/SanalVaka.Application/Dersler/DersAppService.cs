@@ -200,13 +200,13 @@ namespace SanalVaka.Dersler
             var dersOgrenciList = new List<DersOgrenci>();
             foreach (var identityUser in list)
             {
-                var ogrenci = await _ogrenciRepo.GetAsync(x => x.UserId == identityUser);
+                var ogrenci = await _kullaniciRepo.GetAsync(x => x.Id == identityUser);
                 if (ogrenci is not null)
                 {
                     var dersOgrenci = new DersOgrenci();
                     dersOgrenci.DersId = entity.Id;
-                    dersOgrenci.OgrenciId = ogrenci.UserId;
-                    dersOgrenci.IsDeleted = false;
+                    dersOgrenci.OgrenciId = ogrenci.Id;
+                    dersOgrenciList.Add(dersOgrenci);
                 }
             }
             await _dersOgrenciRepo.InsertManyAsync(dersOgrenciList);
@@ -253,26 +253,6 @@ namespace SanalVaka.Dersler
             }
 
             await Repository.UpdateAsync(entity);
-        }
-        public async Task<List<DersInfoDto>> GetDersDropdown()
-        {
-            var entity = await Repository.GetListAsync();
-            
-            var res=new List<DersInfoDto>();
-            foreach (var item in entity) 
-            { 
-                var dersInfo=new DersInfoDto();
-
-                dersInfo.DersAdi = item.DersAdi;
-                dersInfo.DersOnayciAdi=item.DersOnayciAdi;
-                dersInfo.DersOnayciId= (Guid)item.DersOnayciId;
-                dersInfo.BolumId=item.BolumId;
-                dersInfo.BolumName = item.Bolum.BolumAdi;
-                dersInfo.CreatorId = item.CreatorId;
-                dersInfo.Yetkililer = (List<IdentityUserDto>)item.Yetkililer;
-                res.Add(dersInfo);
-            }
-            return res;
         }
         public async Task<PagedResultDto<DersInfoDto>> GetPagedDersler(PagedAndSortedResultRequestDto input, string filter = null)
         {
@@ -332,11 +312,18 @@ namespace SanalVaka.Dersler
         }
         public async Task<List<OgrenciSelectionDto>> GetOgrenciList(Guid dersId)
         {
-            await OgrenciRepoGuncelle();
+           // await OgrenciRepoGuncelle();
             var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
             var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU 
-            FULL OUTER JOIN DersOgrenciler DO ON DO.OgrenciId=AU.Id AND DO.DersId='{dersId}'
-            WHERE Ogrenci=1";
+                            WHERE Ogrenci=1 AND NOT EXISTS
+			                (
+				                SELECT
+					                *
+				                FROM
+					                DersOgrenciler
+				                WHERE
+					                DersId='{dersId}' AND IsDeleted=0
+			                )";
             var OgrenciList = new List<OgrenciSelectionDto>();
 
             using (SqlConnection connection =
@@ -397,7 +384,7 @@ namespace SanalVaka.Dersler
                         var ogrenci = new OgrenciSelectionDto();
                         ogrenci.UserId = Guid.Parse(reader["OgrenciId"].ToString());
                         ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
-                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+                        ogrenci.OgrenciAdi = reader["OgrenciAdi"].ToString();
 
                         OgrenciList.Add(ogrenci);
                     }
@@ -481,6 +468,24 @@ namespace SanalVaka.Dersler
             }
             await _ogrenciRepo.InsertManyAsync(OgrenciList);
         }
+        public async Task<List<DersDropDownDto>> GetDersDropdown()
+        {
+            var entity = await Repository.GetListAsync(x => x.IsDeleted == false);
+            var res = new List<DersDropDownDto>();
+            if (entity is not null)
+            {
+                foreach (var item in entity)
+                {
+                    var bolumInfo = new DersDropDownDto();
+                    bolumInfo.Id = item.Id;
+                    bolumInfo.DersAdi = item.DersAdi;
+                    res.Add(bolumInfo);
+                }
+                return res;
+            }
+            return res;
+        }
+
     }
 
 }

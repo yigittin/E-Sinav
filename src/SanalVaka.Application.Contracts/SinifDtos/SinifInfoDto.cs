@@ -9,6 +9,7 @@ namespace SanalVaka.SinifDtos
 {
     public class SinifInfoDto
     {
+        public Guid Id { get; set; }
         public string SinifAdi { get; set; }
         public int SinifLimit { get; set; }
         public Guid DersId { get; set; }

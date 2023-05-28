@@ -23,7 +23,12 @@ namespace SanalVaka.Siniflar
         private readonly IRepository<IdentityUser,Guid> _kullaniciRepo;
         private readonly ICurrentUser _currentUser;
         private readonly IRepository<Ogrenci> _ogrenciRepo;
-        public SinifAppService(IRepository<Sinif, Guid> repository,IRepository<IdentityUser, Guid> kullaniciRepo,ICurrentUser currentUser,IRepository<Ogrenci> ogrenciRepo)
+        private readonly IRepository<Ders, Guid> _dersRepo;
+        public SinifAppService(IRepository<Sinif, Guid> repository,
+            IRepository<IdentityUser, Guid> kullaniciRepo,
+            ICurrentUser currentUser,
+            IRepository<Ogrenci> ogrenciRepo,
+            IRepository<Ders, Guid> dersRepo)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Siniflar.Default;
@@ -34,6 +39,7 @@ namespace SanalVaka.Siniflar
             _kullaniciRepo = kullaniciRepo;
             _currentUser = currentUser;
             _ogrenciRepo = ogrenciRepo;
+            _dersRepo = dersRepo;
         }
         public async Task OgrenciEkleSingle(Guid guidSinif, int ogrenciId)
         {
@@ -50,7 +56,6 @@ namespace SanalVaka.Siniflar
             entity.SinifOgrenciler.Add(entityOgrenci);
             await Repository.UpdateAsync(entity);
         }
-
         public async Task SinifOnayla(Guid guidSinif)
         {
             var entity=await Repository.FindAsync(guidSinif);
@@ -73,7 +78,6 @@ namespace SanalVaka.Siniflar
                 throw new UserFriendlyException("Tekrar giriş yapınız!");
             }
         }
-
         public async Task OgrenciEkleMulti(List<int> list, Guid guidSinif)
         {
             var entity = await Repository.FindAsync(guidSinif);
@@ -92,7 +96,6 @@ namespace SanalVaka.Siniflar
             }
             await Repository.UpdateAsync(entity);
         }
-
         public async Task<List<SinifInfoDto>> GetSinifInfo()
         {
             var entity= await Repository.GetListAsync();
@@ -104,7 +107,85 @@ namespace SanalVaka.Siniflar
             }
             return res;
         }
+        public async Task<PagedResultDto<SinifInfoDto>> GetPagedSiniflar(PagedAndSortedResultRequestDto input, string filter = null)
+        {
+            if (input.Sorting=="SinifName")
+            {
+                input.Sorting = nameof(Sinif.SinifName);
+            }
+            else if(input.Sorting == "SinifLimit")
+            {
+                input.Sorting = nameof(Sinif.SinifLimit);
+            }
+            else if(input.Sorting == "DersAdi")
+            {
+                input.Sorting = nameof(Sinif.Ders.DersAdi);
+            }
+            else
+            {
+                input.Sorting=nameof(Sinif.SinifName);
+            }
+            var queryable = await Repository.GetQueryableAsync();
+            var entity = queryable.WhereIf
+            (
+                !filter.IsNullOrWhiteSpace(),
+                Sinif => Sinif.SinifName.Contains(filter)
+            )
+            .OrderBy(x=> input.Sorting)
+            .Skip(input.SkipCount)
+            .Take(input.MaxResultCount);
+            var infoList = new List<SinifInfoDto>();
 
+            foreach (var item in entity)
+            {
+                var ders = await _dersRepo.GetAsync(item.DersId);
+                if (ders is null)
+                {
+                    throw new UserFriendlyException("Bölüm bulunamadı");
+                }
+                var res = new SinifInfoDto()
+                {
+                    CreatorId = (Guid)item.CreatorId,
+                    SinifAdi = item.SinifName,
+                    OnaylayanKullaniciAdi = item.SinifOnayciAdi,
+                    IsOnaylandi = item.IsOnaylandi,
+                    DersId = item.DersId,
+                    DersAdi = ders.DersAdi,
+                    Id = item.Id,
+                };
+                var creator = await _kullaniciRepo.FindAsync((Guid)res.CreatorId);
+                res.CreatorUserName = creator.UserName;                
+                infoList.Add(res);
+            }
+            return new PagedResultDto<SinifInfoDto>(
+                infoList.Count,
+                infoList
+            );
+        }
+        public async Task<SinifInfoDto> GetSinifSingle(Guid id)
+        {
+            var entity=await Repository.GetAsync(id);
+            if(entity is null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            }
+            var res = new SinifInfoDto()
+            {
+                SinifAdi=entity.SinifName,
+                SinifLimit=entity.SinifLimit,
+                DersAdi=entity.Ders.DersAdi,
+                Id=entity.Id,
+                IsOnaylandi=entity.IsOnaylandi,
+                OnaylayanKullaniciAdi=entity.SinifOnayciAdi
+            };
+            return res;
+            //public Guid Id { get; set; }
+            //public string SinifAdi { get; set; }
+            //public int SinifLimit { get; set; }
+            //public Guid DersId { get; set; }
+            //public string DersAdi { get; set; }
+            //public bool IsOnaylandi { get; set; }
+        }
 
     }
 }
