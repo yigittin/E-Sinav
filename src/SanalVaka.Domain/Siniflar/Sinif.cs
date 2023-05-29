@@ -22,9 +22,9 @@ namespace SanalVaka.Siniflar
         public virtual ICollection<Ogrenci>? SinifOgrenciler { get; set; }
         public virtual ICollection<IdentityUser>? Yetkililer { get; set; }
         public bool IsOnaylandi { get; set; }
-        public Guid SinifOnayciId { get; set; }
-        public string SinifOnayciUsername { get; set; }
-        public string SinifOnayciAdi { get; set; }
+        public Guid? SinifOnayciId { get; set; }
+        public string? SinifOnayciUsername { get; set; }
+        public string? SinifOnayciAdi { get; set; }
 
     }
 }

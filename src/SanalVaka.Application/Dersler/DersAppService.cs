@@ -476,10 +476,10 @@ namespace SanalVaka.Dersler
             {
                 foreach (var item in entity)
                 {
-                    var bolumInfo = new DersDropDownDto();
-                    bolumInfo.Id = item.Id;
-                    bolumInfo.DersAdi = item.DersAdi;
-                    res.Add(bolumInfo);
+                    var dersInfo = new DersDropDownDto();
+                    dersInfo.Id = item.Id;
+                    dersInfo.DersAdi = item.DersAdi;
+                    res.Add(dersInfo);
                 }
                 return res;
             }

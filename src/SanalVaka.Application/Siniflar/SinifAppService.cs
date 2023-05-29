@@ -186,6 +186,41 @@ namespace SanalVaka.Siniflar
             //public string DersAdi { get; set; }
             //public bool IsOnaylandi { get; set; }
         }
+        public async Task CreateSinif(CreateUpdateSinifDto input)
+        {
+            var ders=await _dersRepo.GetAsync(input.DersId); 
+            if(ders is null)
+            {
+                throw new UserFriendlyException("Ders bulunamadı!");
+            }
+            var entity = new Sinif()
+            {
+                DersId=input.DersId,
+                SinifName=input.SinifAdi,
+                SinifLimit=input.SinifLimit,
+                IsOnaylandi=input.IsOnaylandi,
+                Ders=ders
+            };
+            await Repository.InsertAsync(entity);
+        }
+        public async Task UpdateSinifCustom(CreateUpdateSinifDto input)
+        {
+            var entity = await Repository.GetAsync(x=>x.Id==input.Id);
+            if(entity is null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı!");
+            }
+            var ders = await _dersRepo.GetAsync(input.DersId);
+            if (ders is null)
+            {
+                throw new UserFriendlyException("Ders bulunamadı!");
+            }
+            entity.Ders= ders;
+            entity.SinifName=input.SinifAdi;
+            entity.SinifLimit= input.SinifLimit;
+
+            await Repository.UpdateAsync(entity);
+        }
 
     }
 }
