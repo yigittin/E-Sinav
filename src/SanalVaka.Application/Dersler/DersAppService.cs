@@ -322,7 +322,7 @@ namespace SanalVaka.Dersler
 				                FROM
 					                DersOgrenciler
 				                WHERE
-					                DersId='{dersId}' AND IsDeleted=0
+					                DersId='{dersId}' AND IsDeleted=0 AND OgrenciId=AU.Id
 			                )";
             var OgrenciList = new List<OgrenciSelectionDto>();
 
@@ -339,7 +339,7 @@ namespace SanalVaka.Dersler
                         var ogrenci=new OgrenciSelectionDto();
                         ogrenci.UserId = Guid.Parse(reader["Id"].ToString());
                         ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
-                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+                        ogrenci.OgrenciAdi = reader["Name"].ToString() +" "+ reader["Surname"].ToString();
 
                         OgrenciList.Add(ogrenci);
                     }

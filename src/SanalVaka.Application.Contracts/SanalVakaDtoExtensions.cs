@@ -27,6 +27,10 @@ public static class SanalVakaDtoExtensions
             ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserCreateOrUpdateDtoBase, bool>("Ogrenci");
             ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserDto, string>("OgrenciNo");
             ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserCreateOrUpdateDtoBase, string>("OgrenciNo");
+            ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserDto, bool>("Yetkili");
+            ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserCreateOrUpdateDtoBase, bool>("Yetkili");
+            ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserDto, string>("YetkiliNo");
+            ObjectExtensionManager.Instance.AddOrUpdateProperty<IdentityUserCreateOrUpdateDtoBase, string>("YetkiliNo");
         });
     }
 }

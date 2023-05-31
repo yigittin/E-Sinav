@@ -64,8 +64,10 @@ public class SanalVakaDbContext :
     public DbSet<Ogrenci> Ogrenciler { get; set; }
     public DbSet<DersOgrenci> DersOgrenciler { get; set; }
     public DbSet<SinifOgrenci> SinifOgrenciler { get; set; }
-    //public DbSet<DersUser> DersUsers { get; set; }
-    //public DbSet<SinifUser> SinifUsers { get; set; }
+    public DbSet<SinifYetkili> SinifYetkililer { get; set; }
+    public DbSet<DersYetkili> DersYetkililer { get; set; }
+    public DbSet<BolumYetkili> BolumYetkililer { get; set; }
+
 
 
 

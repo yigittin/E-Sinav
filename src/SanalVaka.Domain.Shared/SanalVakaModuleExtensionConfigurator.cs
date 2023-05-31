@@ -92,5 +92,26 @@ public static class SanalVakaModuleExtensionConfigurator
                     });
                 });
             });
+        ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+        {
+            identity.ConfigureUser(user =>
+            {
+                user.AddOrUpdateProperty<bool>("Yetkili", property =>
+                {
+                    property.Attributes.Add(new RequiredAttribute());
+                    property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
+                });
+            });
+        });
+        ObjectExtensionManager.Instance.Modules().ConfigureIdentity(identity =>
+        {
+            identity.ConfigureUser(user =>
+            {
+                user.AddOrUpdateProperty<string>("YetkiliNo", property =>
+                {
+                    property.Configuration[IdentityModuleExtensionConsts.ConfigurationNames.AllowUserToEdit] = false;
+                });
+            });
+        });
     }
 }

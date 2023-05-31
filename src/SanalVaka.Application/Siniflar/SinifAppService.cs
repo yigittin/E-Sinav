@@ -2,11 +2,13 @@
 using SanalVaka.DersDtos;
 using SanalVaka.Dersler;
 using SanalVaka.Many2Many;
+using SanalVaka.OgrenciDtos;
 using SanalVaka.Ogrenciler;
 using SanalVaka.Permissions;
 using SanalVaka.SinifDtos;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,12 +28,14 @@ namespace SanalVaka.Siniflar
         private readonly IRepository<Ogrenci> _ogrenciRepo;
         private readonly IRepository<Ders, Guid> _dersRepo;
         private readonly IRepository<SinifOgrenci, int> _sinifOgrenci;
+        private readonly IRepository<SinifYetkili, int> _sinifYetkiliRepo;
         public SinifAppService(IRepository<Sinif, Guid> repository,
             IRepository<IdentityUser, Guid> kullaniciRepo,
             ICurrentUser currentUser,
             IRepository<Ogrenci> ogrenciRepo,
             IRepository<Ders, Guid> dersRepo,
-            IRepository<SinifOgrenci, int> sinifOgrenci)
+            IRepository<SinifOgrenci, int> sinifOgrenci,
+            IRepository<SinifYetkili, int> sinifYetkiliRepo)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Siniflar.Default;
@@ -44,21 +48,7 @@ namespace SanalVaka.Siniflar
             _ogrenciRepo = ogrenciRepo;
             _dersRepo = dersRepo;
             _sinifOgrenci = sinifOgrenci;
-        }
-        public async Task OgrenciEkleSingle(Guid guidSinif, int ogrenciId)
-        {
-            var entity = await Repository.FindAsync(guidSinif);
-            if(entity == null)
-            {
-                throw new UserFriendlyException("Sinif bulunamadı!");
-            }
-            var entityOgrenci = await _ogrenciRepo.GetAsync(x=>x.Id==ogrenciId);
-            if(entityOgrenci == null)
-            {
-                throw new UserFriendlyException("Öğrenci bulunamadı");
-            }
-            entity.SinifOgrenciler.Add(entityOgrenci);
-            await Repository.UpdateAsync(entity);
+            _sinifYetkiliRepo = sinifYetkiliRepo;
         }
         public async Task SinifOnayla(Guid guidSinif)
         {
@@ -81,24 +71,6 @@ namespace SanalVaka.Siniflar
             {
                 throw new UserFriendlyException("Tekrar giriş yapınız!");
             }
-        }
-        public async Task OgrenciEkleMulti(List<int> list, Guid guidSinif)
-        {
-            var entity = await Repository.FindAsync(guidSinif);
-            if (entity == null)
-            {
-                throw new UserFriendlyException("Sınıf bulunamadı");
-            }
-            
-            foreach (var identityUser in list)
-            {
-                var ogrenci = await _ogrenciRepo.GetAsync(x=>x.Id==identityUser);
-                if (ogrenci is not null)
-                {
-                    entity.SinifOgrenciler.Add(ogrenci);
-                }
-            }
-            await Repository.UpdateAsync(entity);
         }
         public async Task<List<SinifInfoDto>> GetSinifInfo()
         {
@@ -229,6 +201,7 @@ namespace SanalVaka.Siniflar
         }
         public async Task SinifOgrenciEkleMulti(List<Guid> list, Guid guidSinif)
         {
+            string message = String.Empty;
             var entity = await Repository.FindAsync(guidSinif);
             if (entity == null)
             {
@@ -245,9 +218,18 @@ namespace SanalVaka.Siniflar
                     sinifOgrenci.OgrenciId = ogrenci.Id;
                     sinifOgrenciList.Add(sinifOgrenci);
                 }
+                else
+                {
+                    message += identityUser.ToString() + " Id kullanıcı bulunamadı!";
+                }
             }
             await _sinifOgrenci.InsertManyAsync(sinifOgrenciList);
             await Repository.UpdateAsync(entity);
+
+            if (String.IsNullOrWhiteSpace(message))
+            {
+                throw new Exception(message);
+            }
         }
         public async Task SinifOgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
@@ -284,6 +266,172 @@ namespace SanalVaka.Siniflar
                 sinifOgrenci.Add(ogrenciEnt);
             }
             await _sinifOgrenci.DeleteManyAsync(sinifOgrenci);
+        }
+        public async Task<List<OgrenciSelectionDto>> SinifOgrenciList(Guid guidSinif)
+        {
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT SO.OgrenciId as 'OgrenciId',
+                        SO.SinifId as 'SinifId',
+                        AU.Name +' '+AU.Surname as 'OgrenciAdi',
+                        AU.OgrenciNo as 'OgrenciNo'                         
+                        FROM 
+                        SinifOgrenciler SO 
+                        INNER JOIN AbpUsers AU ON AU.Id=SO.OgrenciId
+                        WHERE SO.SinifId='{guidSinif}'";
+            var OgrenciList = new List<OgrenciSelectionDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var ogrenci = new OgrenciSelectionDto();
+                        ogrenci.UserId = Guid.Parse(reader["OgrenciId"].ToString());
+                        ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+                        ogrenci.OgrenciAdi = reader["OgrenciAdi"].ToString();
+
+                        OgrenciList.Add(ogrenci);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+
+            return OgrenciList;
+            
+        }
+        public async Task<List<OgrenciSelectionDto>> GetOgrenciList(Guid sinifId,Guid dersId)
+        {
+            // await OgrenciRepoGuncelle();
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU 
+                            WHERE Ogrenci=1 AND NOT EXISTS
+			                (
+				                SELECT
+					                Id
+				                FROM
+					                SinifOgrenciler
+				                WHERE
+					                SinifId='{sinifId}' AND IsDeleted=0
+			                ) AND EXISTS
+							(
+								SELECT 
+									Id
+								FROM
+									DersOgrenciler
+								WHERE
+									dersId='{dersId}' AND IsDeleted=0
+							)";
+            var OgrenciList = new List<OgrenciSelectionDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var ogrenci = new OgrenciSelectionDto();
+                        ogrenci.UserId = Guid.Parse(reader["Id"].ToString());
+                        ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+
+                        OgrenciList.Add(ogrenci);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+
+            return OgrenciList;
+        }
+        public async Task SinifYetkiliEkleSingle(Guid sinifId,Guid yetkiliId)
+        {
+            var sinif=await Repository.GetAsync(sinifId);
+            if(sinif is null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            }
+            var yetkili = await _kullaniciRepo.GetAsync(yetkiliId);
+            if(yetkili is null)
+            {
+                throw new UserFriendlyException("Yetkili kullanıcı bulunamadı");
+            }
+            var sinifYetkili = new SinifYetkili()
+            {
+                SinifId = sinifId,
+                YetkiliId=yetkiliId
+            };
+
+            await _sinifYetkiliRepo.InsertAsync(sinifYetkili);
+        }
+        public async Task SinifYetkiliEkleMulti(Guid sinifId,List<Guid> list)
+        {
+            string message = String.Empty;
+            var sinif=await Repository.GetAsync(sinifId);
+            if(sinif is null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            }
+            var sinifYetkiliList = new List<SinifYetkili>();
+            foreach(var item in list)
+            {
+                var yetkili = await _kullaniciRepo.GetAsync(item);
+                if(yetkili is null)
+                {
+                    message += item.ToString() + " Id kullanıcısı bulunamadı";
+                }
+                else
+                {
+                    var sinifYetkili = new SinifYetkili()
+                    {
+                        SinifId= sinifId,
+                        YetkiliId=item
+                    };
+                    sinifYetkiliList.Add(sinifYetkili);
+                }
+            }
+            await _sinifYetkiliRepo.InsertManyAsync(sinifYetkiliList);
+            if(String.IsNullOrWhiteSpace(message))
+            {
+                throw new UserFriendlyException(message +"\n Diğer yetkililer eklenmiştir!");
+            }
+        }
+        public async Task SinifYetkiliCikarSingle(Guid sinifId,Guid yetkiliId)
+        {
+            var sinif = await Repository.GetAsync(sinifId);
+            if (sinif is null)            
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            
+            var yetkili = await _kullaniciRepo.GetAsync(yetkiliId);
+
+            if (yetkili is null)            
+                throw new UserFriendlyException("Yetkili kullanıcı bulunamadı");
+            
+            var entity=await _sinifYetkiliRepo.GetAsync(x=>x.SinifId==sinifId&&x.YetkiliId==yetkiliId);
+            if(entity is null)            
+                throw new UserFriendlyException("Kayıtlı yetkili bulunamadı");
+           
+            await _sinifYetkiliRepo.DeleteAsync(entity);
         }
 
     }

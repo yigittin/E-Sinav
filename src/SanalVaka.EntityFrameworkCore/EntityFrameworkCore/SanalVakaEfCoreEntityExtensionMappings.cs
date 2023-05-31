@@ -27,21 +27,34 @@ public static class SanalVakaEfCoreEntityExtensionMappings
                  *
                  * Example: Map a property to a table field:
                 */
-                     ObjectExtensionManager.Instance
-                         .MapEfCoreProperty<IdentityUser, bool>(
-                             "Ogrenci",
-                             (entityBuilder, propertyBuilder) =>
-                             {
-                             }
-                         );
-                    ObjectExtensionManager.Instance
-                        .MapEfCoreProperty<IdentityUser, string>(
-                            "OgrenciNo",
-                            (entityBuilder, propertyBuilder) =>
-                            {
-                            }
-                        );
-
+            ObjectExtensionManager.Instance
+                .MapEfCoreProperty<IdentityUser, bool>(
+                    "Ogrenci",
+                    (entityBuilder, propertyBuilder) =>
+                    {
+                    }
+                );
+            ObjectExtensionManager.Instance
+                .MapEfCoreProperty<IdentityUser, string>(
+                    "OgrenciNo",
+                    (entityBuilder, propertyBuilder) =>
+                    {
+                    }
+                );
+            ObjectExtensionManager.Instance
+                .MapEfCoreProperty<IdentityUser, bool>(
+                    "Yetkili",
+                    (entityBuilder, propertyBuilder) =>
+                    {
+                    }
+                );
+            ObjectExtensionManager.Instance
+                .MapEfCoreProperty<IdentityUser, string>(
+                    "YetkiliNo",
+                    (entityBuilder, propertyBuilder) =>
+                    {
+                    }
+                );
             /*
          * See the documentation for more:
          * https://docs.abp.io/en/abp/latest/Customizing-Application-Modules-Extending-Entities
