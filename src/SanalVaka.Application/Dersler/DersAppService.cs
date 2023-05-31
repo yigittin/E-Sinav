@@ -35,7 +35,7 @@ namespace SanalVaka.Dersler
         private readonly IRepository<Bolum,Guid> _bolumRepository;
         private readonly IRepository<Sinif, Guid> _sinifRepository;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
-        private readonly IRepository<DersOgrenci> _dersOgrenciRepo;
+        private readonly IRepository<DersOgrenci,int> _dersOgrenciRepo;
         public DersAppService(IRepository<Ders, Guid> repository,
             IRepository<IdentityUser, Guid> kullaniciRepo,
             ICurrentUser currentUser,
@@ -43,7 +43,7 @@ namespace SanalVaka.Dersler
             IRepository<Bolum, Guid> bolumRepo,
             IRepository<Sinif, Guid> sinifRepo,
             IUnitOfWorkManager uow,
-            IRepository<DersOgrenci> dersOgrenci)
+            IRepository<DersOgrenci,int> dersOgrenci)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Dersler.Default;

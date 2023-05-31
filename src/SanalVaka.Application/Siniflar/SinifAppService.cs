@@ -227,7 +227,7 @@ namespace SanalVaka.Siniflar
 
             await Repository.UpdateAsync(entity);
         }
-        public async Task OgrenciEkleMulti(List<Guid> list, Guid guidSinif)
+        public async Task SinifOgrenciEkleMulti(List<Guid> list, Guid guidSinif)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if (entity == null)
@@ -249,7 +249,7 @@ namespace SanalVaka.Siniflar
             await _sinifOgrenci.InsertManyAsync(sinifOgrenciList);
             await Repository.UpdateAsync(entity);
         }
-        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
+        public async Task SinifOgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
             var entity = await Repository.FindAsync(guidSinif);
             if (entity == null)
@@ -270,12 +270,12 @@ namespace SanalVaka.Siniflar
             await _sinifOgrenci.InsertAsync(sinifOgrenci);
             await Repository.UpdateAsync(entity);
         }
-        public async Task OgrenciCikarSingle(Guid guidSinif,Guid ogrenciId)
+        public async Task SinifOgrenciCikarSingle(Guid guidSinif,Guid ogrenciId)
         {
             var ogrenciSinif=await _sinifOgrenci.GetAsync(x=>x.SinifId== guidSinif&&x.OgrenciId==ogrenciId);
             await _sinifOgrenci.DeleteAsync(ogrenciSinif);
         }
-        public async Task OgrenciCikarMulti(Guid guidSinif, List<Guid> list)
+        public async Task SinifOgrenciCikarMulti(Guid guidSinif, List<Guid> list)
         {
             List<SinifOgrenci> sinifOgrenci = new List<SinifOgrenci>();
             foreach(var item in list)
