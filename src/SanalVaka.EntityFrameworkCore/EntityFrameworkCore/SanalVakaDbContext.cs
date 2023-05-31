@@ -63,6 +63,7 @@ public class SanalVakaDbContext :
     public DbSet<Sinif> Siniflar { get; set; }
     public DbSet<Ogrenci> Ogrenciler { get; set; }
     public DbSet<DersOgrenci> DersOgrenciler { get; set; }
+    public DbSet<SinifOgrenci> SinifOgrenciler { get; set; }
     //public DbSet<DersUser> DersUsers { get; set; }
     //public DbSet<SinifUser> SinifUsers { get; set; }
 

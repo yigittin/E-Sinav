@@ -1,6 +1,7 @@
 ﻿using AutoMapper.Internal.Mappers;
 using SanalVaka.DersDtos;
 using SanalVaka.Dersler;
+using SanalVaka.Many2Many;
 using SanalVaka.Ogrenciler;
 using SanalVaka.Permissions;
 using SanalVaka.SinifDtos;
@@ -24,11 +25,13 @@ namespace SanalVaka.Siniflar
         private readonly ICurrentUser _currentUser;
         private readonly IRepository<Ogrenci> _ogrenciRepo;
         private readonly IRepository<Ders, Guid> _dersRepo;
+        private readonly IRepository<SinifOgrenci, int> _sinifOgrenci;
         public SinifAppService(IRepository<Sinif, Guid> repository,
             IRepository<IdentityUser, Guid> kullaniciRepo,
             ICurrentUser currentUser,
             IRepository<Ogrenci> ogrenciRepo,
-            IRepository<Ders, Guid> dersRepo)
+            IRepository<Ders, Guid> dersRepo,
+            IRepository<SinifOgrenci, int> sinifOgrenci)
         : base(repository)
         {
             GetPolicyName = SanalVakaPermissions.Siniflar.Default;
@@ -40,6 +43,7 @@ namespace SanalVaka.Siniflar
             _currentUser = currentUser;
             _ogrenciRepo = ogrenciRepo;
             _dersRepo = dersRepo;
+            _sinifOgrenci = sinifOgrenci;
         }
         public async Task OgrenciEkleSingle(Guid guidSinif, int ogrenciId)
         {
@@ -173,11 +177,13 @@ namespace SanalVaka.Siniflar
             {
                 SinifAdi=entity.SinifName,
                 SinifLimit=entity.SinifLimit,
-                DersAdi=entity.Ders.DersAdi,
                 Id=entity.Id,
+                DersId=entity.DersId,
                 IsOnaylandi=entity.IsOnaylandi,
                 OnaylayanKullaniciAdi=entity.SinifOnayciAdi
             };
+            var ders = await _dersRepo.GetAsync(res.DersId);
+            res.DersAdi = ders.DersAdi;
             return res;
             //public Guid Id { get; set; }
             //public string SinifAdi { get; set; }
@@ -220,6 +226,64 @@ namespace SanalVaka.Siniflar
             entity.SinifLimit= input.SinifLimit;
 
             await Repository.UpdateAsync(entity);
+        }
+        public async Task OgrenciEkleMulti(List<Guid> list, Guid guidSinif)
+        {
+            var entity = await Repository.FindAsync(guidSinif);
+            if (entity == null)
+            {
+                throw new UserFriendlyException("Sınıf bulunamadı");
+            }
+            var sinifOgrenciList = new List<SinifOgrenci>();
+            foreach (var identityUser in list)
+            {
+                var ogrenci = await _kullaniciRepo.GetAsync(x => x.Id == identityUser);
+                if (ogrenci is not null)
+                {
+                    var sinifOgrenci = new SinifOgrenci();
+                    sinifOgrenci.SinifId = entity.Id;
+                    sinifOgrenci.OgrenciId = ogrenci.Id;
+                    sinifOgrenciList.Add(sinifOgrenci);
+                }
+            }
+            await _sinifOgrenci.InsertManyAsync(sinifOgrenciList);
+            await Repository.UpdateAsync(entity);
+        }
+        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
+        {
+            var entity = await Repository.FindAsync(guidSinif);
+            if (entity == null)
+            {
+                throw new UserFriendlyException("Sinif bulunamadı!");
+            }
+            var entityOgrenci = await _ogrenciRepo.GetAsync(x => x.UserId == ogrenciId);
+
+
+            if (entityOgrenci == null)
+            {
+                throw new UserFriendlyException("Öğrenci bulunamadı");
+            }
+            var sinifOgrenci = new SinifOgrenci();
+            sinifOgrenci.SinifId = entity.Id;
+            sinifOgrenci.OgrenciId = entityOgrenci.UserId;
+            sinifOgrenci.IsDeleted = false;
+            await _sinifOgrenci.InsertAsync(sinifOgrenci);
+            await Repository.UpdateAsync(entity);
+        }
+        public async Task OgrenciCikarSingle(Guid guidSinif,Guid ogrenciId)
+        {
+            var ogrenciSinif=await _sinifOgrenci.GetAsync(x=>x.SinifId== guidSinif&&x.OgrenciId==ogrenciId);
+            await _sinifOgrenci.DeleteAsync(ogrenciSinif);
+        }
+        public async Task OgrenciCikarMulti(Guid guidSinif, List<Guid> list)
+        {
+            List<SinifOgrenci> sinifOgrenci = new List<SinifOgrenci>();
+            foreach(var item in list)
+            {
+                var ogrenciEnt = await _sinifOgrenci.GetAsync(x => x.SinifId == guidSinif && x.OgrenciId == item);
+                sinifOgrenci.Add(ogrenciEnt);
+            }
+            await _sinifOgrenci.DeleteManyAsync(sinifOgrenci);
         }
 
     }

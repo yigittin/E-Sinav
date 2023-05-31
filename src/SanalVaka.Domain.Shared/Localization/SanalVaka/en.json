@@ -30,9 +30,10 @@
     "StudyId": "Study ID",
     "StudentName": "Student Name",
     "StudentId": "Student ID",
+    "Student Number": "Student Number",
     "CreatorName": "Creator",
     "ConfirmerName": "Confirmer",
     "Detail": "Detail",
-    "isConfirmed": "Is Confirmed?"
+    "isConfirmed": "Is Confirmed?",
   }
 }

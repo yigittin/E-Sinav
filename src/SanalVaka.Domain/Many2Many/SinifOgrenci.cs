@@ -7,10 +7,9 @@ using Volo.Abp.Domain.Entities.Auditing;
 
 namespace SanalVaka.Many2Many
 {
-    public class DersOgrenci: FullAuditedAggregateRoot<int>
+    public class SinifOgrenci: FullAuditedAggregateRoot<int>
     {
-        public Guid DersId { get; set; }
+        public Guid SinifId { get; set; }
         public Guid OgrenciId { get; set; }
-
     }
 }

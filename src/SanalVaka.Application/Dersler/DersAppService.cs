@@ -169,12 +169,12 @@ namespace SanalVaka.Dersler
             await Repository.UpdateAsync(entity);
 
         }
-        public async Task OgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
+        public async Task OgrenciEkleSingle(Guid guidDers, Guid ogrenciId)
         {
-            var entity = await Repository.FindAsync(guidSinif);
+            var entity = await Repository.FindAsync(guidDers);
             if (entity == null)
             {
-                throw new UserFriendlyException("Sinif bulunamadı!");
+                throw new UserFriendlyException("Ders bulunamadı!");
             }
             var entityOgrenci = await _ogrenciRepo.GetAsync(x => x.UserId == ogrenciId);
 
@@ -190,9 +190,9 @@ namespace SanalVaka.Dersler
             await _dersOgrenciRepo.InsertAsync(dersOgrenci);
             await Repository.UpdateAsync(entity);
         }
-        public async Task OgrenciEkleMulti(List<Guid> list, Guid guidSinif)
+        public async Task OgrenciEkleMulti(List<Guid> list, Guid guidDers)
         {
-            var entity = await Repository.FindAsync(guidSinif);
+            var entity = await Repository.FindAsync(guidDers);
             if (entity == null)
             {
                 throw new UserFriendlyException("Sınıf bulunamadı");
@@ -218,7 +218,7 @@ namespace SanalVaka.Dersler
 
             if (entity == null)
             {
-                throw new UserFriendlyException("Sınıf bulunamadı");
+                throw new UserFriendlyException("Ders bulunamadı");
             }
             if (_currentUser.Id is not null)
             {
@@ -416,6 +416,7 @@ namespace SanalVaka.Dersler
                 sinif.CreatorId = item.CreatorId ?? Guid.Empty;
                 sinif.SinifAdi = item.SinifName;
                 sinif.SinifLimit=item.SinifLimit;
+                sinif.Id = item.Id;
                 sinifList.Add(sinif);
             }
 
