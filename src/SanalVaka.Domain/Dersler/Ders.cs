@@ -1,5 +1,7 @@
 ﻿using SanalVaka.Bolumler;
 using SanalVaka.Ogrenciler;
+using SanalVaka.Sinavlar;
+using SanalVaka.Sorular;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -22,7 +24,7 @@ namespace SanalVaka.Dersler
         public Guid? DersOnayciId { get; set; }
         public string? DersOnayciUsername { get; set; }
         public string? DersOnayciAdi { get; set; }
-
+        public ICollection<Sinav> SinavList { get; set; }
 
     }
 }

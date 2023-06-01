@@ -3,7 +3,9 @@ using SanalVaka.Bolumler;
 using SanalVaka.Dersler;
 using SanalVaka.Many2Many;
 using SanalVaka.Ogrenciler;
+using SanalVaka.Sinavlar;
 using SanalVaka.Siniflar;
+using SanalVaka.Sorular;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -67,7 +69,9 @@ public class SanalVakaDbContext :
     public DbSet<SinifYetkili> SinifYetkililer { get; set; }
     public DbSet<DersYetkili> DersYetkililer { get; set; }
     public DbSet<BolumYetkili> BolumYetkililer { get; set; }
-
+    public DbSet<Soru> Sorular { get; set; }
+    public DbSet<Cevap> Cevaplar { get; set; }
+    public DbSet<Sinav> Sinavlar { get; set; }
 
 
 
