@@ -12,5 +12,7 @@ namespace SanalVaka.SinavDtos
         public string SoruMetni { get; set; }
         [Required]
         public Guid SinavId { get; set; }
+        [Required]
+        public double Puan { get; set; }
     }
 }
