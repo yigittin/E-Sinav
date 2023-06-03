@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Volo.Abp;
+using Volo.Abp.Application.Dtos;
+using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
 
 namespace SanalVaka.Sinavlar
 {
-    public class CevapAppService:ICevapAppService
+    public class CevapAppService:CrudAppService<Cevap,CevapCrudDto,Guid,PagedAndSortedResultRequestDto, CreateUpdateCevapDto>,ICevapAppService
     {
-        private readonly IRepository<Cevap, Guid> _repository;
+
         private readonly IRepository<Sinav, Guid> _sinavRepository;
         private readonly IRepository<Soru, Guid> _soruRepository;
         private readonly IRepository<Ders, Guid> _dersRepository;
@@ -21,9 +23,8 @@ namespace SanalVaka.Sinavlar
         public CevapAppService(IRepository<Cevap, Guid> repository,
            IRepository<Sinav, Guid> sinavRepository,
            IRepository<Soru, Guid> soruRepository,
-           IRepository<Ders, Guid> dersRepository)
+           IRepository<Ders, Guid> dersRepository):base(repository)
         {
-            _repository = repository;
             _sinavRepository = sinavRepository;
             _soruRepository = soruRepository;
             _dersRepository = dersRepository;
@@ -45,11 +46,11 @@ namespace SanalVaka.Sinavlar
                     SoruId=input.SoruId,
                     Soru=soru
                 };
-                await _repository.InsertAsync(entity);
+                await Repository.InsertAsync(entity);
             }
             else if(input.Id is not null)
             {
-                var entity = await _repository.GetAsync((Guid)input.Id);
+                var entity = await Repository.GetAsync((Guid)input.Id);
                 if(entity is null)
                 {
                     throw new UserFriendlyException("Cevap bulunamadı");
@@ -59,26 +60,26 @@ namespace SanalVaka.Sinavlar
                 entity.SoruId=input.SoruId;
                 entity.Soru = soru;
 
-                await _repository.UpdateAsync(entity);
+                await Repository.UpdateAsync(entity);
             }
         }
 
         public async Task DogruCevapSec(Guid id)
         {
-            var entity = await _repository.GetAsync(id);
+            var entity = await Repository.GetAsync(id);
             if (entity is null)
             {
                 throw new UserFriendlyException("Cevap bulunamadı");
             }
             entity.IsDogru = true;
 
-            await _repository.UpdateAsync(entity);
+            await Repository.UpdateAsync(entity);
         }
 
         public async Task<List<CevapDto>> GetCevapList(Guid soruId)
         {
             List<CevapDto> res=new List<CevapDto> ();
-            var entity = await _repository.GetListAsync(x => x.SoruId == soruId && x.IsDeleted == false);
+            var entity = await Repository.GetListAsync(x => x.SoruId == soruId && x.IsDeleted == false);
             foreach(var item in entity)
             {
                 var cevap = new CevapDto()

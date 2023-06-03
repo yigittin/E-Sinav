@@ -11,5 +11,6 @@ namespace SanalVaka.SinavDtos
         public string SoruMetni { get; set; }
         public Guid SinavId { get; set; }
         public List<CevapDto>? CevapList { get; set; }
+        public double Puan { get; set; }
     }
 }
