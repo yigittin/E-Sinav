@@ -35,5 +35,17 @@
     "ConfirmerName": "Confirmer",
     "Detail": "Detail",
     "isConfirmed": "Is Confirmed?",
+    "Exam": "Exam",
+    "ExamName": "Exam Name",
+    "ExamStart": "Exam Start Time",
+    "ExamTime": "Exam Time",
+    "ExamPoint": "Exam Point",
+    "NewExam": "New Exam",
+    "EditExam": "Edit Exam",
+    "Question": "Question",
+    "QuestionText": "Question Text",
+    "QuestionPoint": "Question Point",
+    "Answer": "Answer",
+    "AnswerText": "Answer Text"
   }
 }

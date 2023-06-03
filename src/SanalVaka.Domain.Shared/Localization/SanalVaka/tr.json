@@ -34,6 +34,18 @@
     "CreatorName": "Oluşturan Kullanıcı",
     "ConfirmerName": "Onaylayan Kullanıcı",
     "Detail": "Detay",
-    "isConfirmed": "Onaylandı Mı?"
+    "isConfirmed": "Onaylandı Mı?",
+    "Exam": "Sınav",
+    "ExamName": "Sınav Adı",
+    "ExamStart": "Sınav Başlangıç Tarihi",
+    "ExamTime": "Sınav Süresi",
+    "ExamPoint": "Sınav Ağırlığı",
+    "NewExam": "Yeni Sınav",
+    "EditExam": "Sınav Editle",
+    "Question": "Soru",
+    "QuestionText": "Soru Metni",
+    "QuestionPoint": "Soru Puanı",
+    "Answer": "Cevap",
+    "AnswerText": "Cevap Metni"
   }
 }

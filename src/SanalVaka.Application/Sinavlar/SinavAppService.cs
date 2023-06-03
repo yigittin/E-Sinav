@@ -92,6 +92,7 @@ namespace SanalVaka.Sinavlar
             List<SinavDto> res = new List<SinavDto>();
             foreach(var item in entityList)
             {
+                var ders = await _dersRepository.GetAsync(item.DersId);
                 var sinav = new SinavDto()
                 {
                     Agirlik=item.Agirlik,
@@ -99,7 +100,8 @@ namespace SanalVaka.Sinavlar
                     SinavSure=item.SinavSure,
                     DersId=item.DersId,
                     BaslangicTarih=item.BaslangicTarih,
-                    Id= item.Id
+                    Id= item.Id,
+                    DersAdi=ders.DersAdi
                 };
                 res.Add(sinav);
             }
@@ -112,6 +114,7 @@ namespace SanalVaka.Sinavlar
             {
                 throw new UserFriendlyException("Sınav bulunamadı");
             }
+            var ders=await _dersRepository.GetAsync(sinav.DersId);
             var sinavDto = new SinavDto()
             {
                 Agirlik = sinav.Agirlik,
@@ -119,7 +122,8 @@ namespace SanalVaka.Sinavlar
                 SinavSure = sinav.SinavSure,
                 DersId = sinav.DersId,
                 BaslangicTarih = sinav.BaslangicTarih,
-                Id = sinav.Id
+                Id = sinav.Id,
+                DersAdi=ders.DersAdi
             };
             var soru = await _soruRepository.GetListAsync(x => x.SinavId == sinav.Id && x.IsDeleted == false);
             List<SoruDto> soruList = new List<SoruDto>();
@@ -146,5 +150,58 @@ namespace SanalVaka.Sinavlar
             };
             return res;
         }
+        public async Task<PagedResultDto<SinavDto>> GetPagedSiniflar(PagedAndSortedResultRequestDto input,string filter=null)
+        {
+            var queryable = await Repository.GetQueryableAsync();
+            var entity = queryable.WhereIf
+                (
+                    !filter.IsNullOrWhiteSpace(), Sinav => Sinav.SinavAdi.Contains(filter)
+                )
+                .OrderBy(x => x.BaslangicTarih)
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount);
+            List<SinavDto> res = new List<SinavDto>();
+            
+            foreach (var item in entity)
+            {
+                var ders = await _dersRepository.GetAsync(item.DersId);
+                var sinav = new SinavDto()
+                {
+                    Agirlik = item.Agirlik,
+                    SinavAdi = item.SinavAdi,
+                    SinavSure = item.SinavSure,
+                    DersId = item.DersId,
+                    BaslangicTarih = item.BaslangicTarih,
+                    Id = item.Id,
+                    DersAdi=ders.DersAdi
+                };
+                res.Add(sinav);
+            }
+            return new PagedResultDto<SinavDto>(
+                res.Count,
+                res
+            );
+        }
+        public async Task<SinavDto> GetSinavSingle(Guid id)
+        {
+            var sinav = await Repository.GetAsync(id);
+            if(sinav is null)
+            {
+                throw new UserFriendlyException("Sınav bulunamadı");
+            }
+            var ders = await _dersRepository.GetAsync(sinav.DersId);
+            var res = new SinavDto()
+            {
+                Agirlik=sinav.Agirlik,
+                BaslangicTarih=sinav.BaslangicTarih,
+                DersAdi=ders.DersAdi,
+                DersId=sinav.DersId,
+                Id=sinav.Id,
+                SinavAdi=sinav.SinavAdi,
+                SinavSure = sinav.SinavSure
+            };
+            return res;
+        }
+        
     }
 }

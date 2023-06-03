@@ -14,6 +14,7 @@ namespace SanalVaka.SinavDtos
         public DateTime BaslangicTarih { get; set; }
         public int SinavSure { get; set; }
         public double Agirlik { get; set; }
+        public string DersAdi { get; set; }
 
     }
 }

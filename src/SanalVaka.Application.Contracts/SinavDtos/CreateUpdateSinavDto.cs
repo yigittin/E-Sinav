@@ -13,6 +13,7 @@ namespace SanalVaka.SinavDtos
         [Required]
         public Guid DersId { get; set; }
         [Required]
+        [DataType(DataType.DateTime)]
         public DateTime BaslangicTarih { get; set; }
         [Required]
         public int SinavSure { get; set; }
