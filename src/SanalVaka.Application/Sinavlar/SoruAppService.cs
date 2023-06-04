@@ -80,16 +80,22 @@ namespace SanalVaka.Sinavlar
         }
         public async Task<List<SoruDto>> GetSoruListBySinavId(Guid id)
         {
-            var entity = await Repository.GetListAsync(x=>x.Id==id&&x.IsDeleted==false);
+            var entity = await Repository.GetListAsync(x=>x.SinavId==id&&x.IsDeleted==false);            
             var res = new List<SoruDto>();
             foreach(var item in entity)
             {
+                int count = 0;
+                if(item.CevapList is not null)
+                {
+                    count = item.CevapList.Count;
+                }
                 var soru = new SoruDto()
                 {
                     Id = item.Id,
                     SinavId=item.SinavId,
                     SoruMetni=item.SoruMetni,
-                    Puan=item.Puan
+                    Puan=item.Puan,
+                    CevapCount=count
                 };
                 res.Add(soru);
             }
