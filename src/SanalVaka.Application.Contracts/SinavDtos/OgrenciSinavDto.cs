@@ -11,7 +11,7 @@ namespace SanalVaka.SinavDtos
         public Guid SinavId { get; set; }
         public DateTime Baslangic { get; set; }
         public DateTime Bitis { get; set; }
-        public List<OgrenciCevapDto> OgrenciCevaplar { get; set; }
+        public SinavSoruCevapDto SinavSorular { get; set; }
 
     }
 }

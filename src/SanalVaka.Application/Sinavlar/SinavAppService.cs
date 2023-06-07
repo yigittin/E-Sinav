@@ -7,6 +7,7 @@ using SanalVaka.Siniflar;
 using SanalVaka.Sorular;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -218,32 +219,74 @@ namespace SanalVaka.Sinavlar
 
         public async Task SinavBaslat(Guid sinavId)
         {
-            var ogrenciSinav=await _ogrenciSinavRepo.GetAsync(x=>x.SinavId==sinavId&&x.OgrenciId==_currentUser.Id);
+            var ogrenciSinavList=await _ogrenciSinavRepo.GetListAsync(x=>x.SinavId==sinavId&&x.OgrenciId==_currentUser.Id);
+            OgrenciSinavDto ogrenciSinav = new OgrenciSinavDto();
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT
+	                        OS.Id as 'Id',
+	                        OS.OgrenciId as 'OgrenciId',
+	                        OS.SinavId as 'SinavId',
+	                        OS.Baslangic as 'Baslangic',
+	                        OS.Bitis as 'Bitis',
+	                        OS.IsDeleted as 'IsDeleted'
+                        FROM
+	                        OgrenciSinavlar OS
+                        WHERE 
+	                        OS.SinavId='{sinavId}' AND OS.OgrenciId='{_currentUser.Id}'";
+            using (SqlConnection connection =
+           new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        ogrenciSinav.SinavId = Guid.Parse(reader["SinavId"].ToString());
+                        ogrenciSinav.OgrenciId = Guid.Parse(reader["OgrenciId"].ToString());
+                        ogrenciSinav.Baslangic = DateTime.Parse(reader["Baslangic"].ToString());
+                        ogrenciSinav.Bitis = DateTime.Parse(reader["Bitis"].ToString());
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
             var sinav = await Repository.GetAsync(sinavId);
             if(sinav is null)
             {
                 throw new UserFriendlyException("Sınav bulunamadı!");
             }
-            if(ogrenciSinav is not null)
+            if(ogrenciSinav.SinavId!=Guid.Empty)
             {
                 if (ogrenciSinav.Bitis < DateTime.Now)
                 {
                     throw new UserFriendlyException("Sınav süreniz dolmuştur");
                 }
             }
-            else if(ogrenciSinav is null)
+            else if(ogrenciSinav.SinavId == Guid.Empty)
             {
                 var yeniGiris = new OgrenciSinav()
                 {
                     OgrenciId= (Guid)_currentUser.Id,
                     Baslangic=DateTime.Now,
-                    Bitis=DateTime.Now.AddMinutes(sinav.SinavSure)
+                    Bitis=DateTime.Now.AddMinutes(sinav.SinavSure),
+                    SinavId=sinavId
                 };
                 await _ogrenciSinavRepo.InsertAsync(yeniGiris);
             }
         }
         public async Task<OgrenciSinavDto> GetOgrenciSinavSure(Guid sinavId)
         {
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
             var sinav = await Repository.GetAsync(sinavId);
             if(sinav is null)
             {
@@ -252,6 +295,8 @@ namespace SanalVaka.Sinavlar
             var sinavOgrenci = await _ogrenciSinavRepo.GetAsync(x => x.OgrenciId == _currentUser.GetId() && x.SinavId == sinavId);
             var sorular = await _soruRepository.GetListAsync(x => x.SinavId == sinavId && x.IsDeleted == false);
             List<OgrenciCevapDto> ogrenciCevap = new List<OgrenciCevapDto>();
+            List<SoruDto> soruList=new List<SoruDto>();
+            SinavSoruCevapDto sinavSoruCevapDto = new SinavSoruCevapDto();
             foreach(var item in sorular)
             {
                 var cevap = await _cevapRepository.GetListAsync(x => x.SoruId == item.Id && x.IsDeleted == false);
@@ -263,32 +308,78 @@ namespace SanalVaka.Sinavlar
                         Id=item2.Id,
                         SoruId=item.Id,
                         CevapMetni=item2.CevapMetni,
-                        IsDogru=item2.IsDogru
+                        IsDogru=item2.IsDogru                        
                     };
                     cevapDtoList.Add(cDto);
                 }
-                var ogrenciCevaplar = await _ogrenciCevapRepo.GetListAsync(x => x.SoruId == item.Id);
-                foreach (var item2 in ogrenciCevaplar)
+                //var ogrenciCevaplar = await _ogrenciCevapRepo.GetAsync(x => x.SoruId == item.Id);
+                OgrenciCevapDto newCevapDto = new OgrenciCevapDto();
+                var sqlQuery = $@"SELECT
+	                                OC.SoruId,
+	                                OC.CevapId,
+	                                OC.OgrenciId,
+	                                OC.OgrenciSinavId,
+	                                OC.IsDeleted
+                                FROM
+	                                OgrenciCevaplar OC
+                                WHERE
+	                                OC.SoruId='{item.Id}' AND OC.OgrenciId='{_currentUser.Id}'";
+                using (SqlConnection connection =
+                new SqlConnection(connectionString))
                 {
-                    OgrenciCevapDto oCDto = new OgrenciCevapDto()
+                    // Create the Command and Parameter objects.
+                    SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                    // Open the connection in a try/catch block.
+                    // Create and execute the DataReader, writing the result
+                    // set to the console window.
+                    try
                     {
-                        CevapList= cevapDtoList,
-                        OgrenciCevapId=item2.CevapId,
-                        SoruId= item2.SoruId,
-                    };
-                    ogrenciCevap.Add(oCDto);
+                        connection.Open();
+                        SqlDataReader reader = await command.ExecuteReaderAsync();
+                        while (await reader.ReadAsync())
+                        {
+                            newCevapDto.SoruId = Guid.Parse(reader["SoruId"].ToString()); ;
+                            newCevapDto.OgrenciCevapId = Guid.Parse(reader["CevapId"].ToString());
+                            newCevapDto.CevapList = cevapDtoList;
+                        }
+                        reader.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new UserFriendlyException("Bir şeyler ters gitti");
+                    }
                 }
+                if (newCevapDto.SoruId == Guid.Empty)
+                    newCevapDto = null;
+                SoruDto newSoru = new SoruDto()
+                {
+                    Id=item.Id,
+                    CevapList= cevapDtoList,
+                    ogrenciCevap= newCevapDto,
+                    Puan=item.Puan,
+                    SoruMetni=item.SoruMetni,              
+                    
+                };
+                soruList.Add(newSoru);
             }
+            sinavSoruCevapDto.SoruList = soruList;
+            sinavSoruCevapDto.SinavId = sinavId;
+            sinavSoruCevapDto.OgrenciId = (Guid)_currentUser.Id;
             OgrenciSinavDto res = new OgrenciSinavDto()
             {
                 Baslangic = sinavOgrenci.Baslangic,
                 Bitis = sinavOgrenci.Bitis,
                 SinavId = sinavId,
                 OgrenciId = _currentUser.GetId(),
-                OgrenciCevaplar = ogrenciCevap
+                SinavSorular = sinavSoruCevapDto,
+                
+                
             };
             return res;
         }
+
+
         
     }
 }
