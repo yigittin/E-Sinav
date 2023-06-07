@@ -242,7 +242,7 @@ namespace SanalVaka.Sinavlar
                 await _ogrenciSinavRepo.InsertAsync(yeniGiris);
             }
         }
-        public async Task<OgrenciSinav> GetOgrenciSinavSure(Guid sinavId)
+        public async Task<OgrenciSinavDto> GetOgrenciSinavSure(Guid sinavId)
         {
             var sinav = await Repository.GetAsync(sinavId);
             if(sinav is null)
@@ -276,20 +276,18 @@ namespace SanalVaka.Sinavlar
                         OgrenciCevapId=item2.CevapId,
                         SoruId= item2.SoruId,
                     };
+                    ogrenciCevap.Add(oCDto);
                 }
-                OgrenciCevapDto cevapDto = new OgrenciCevapDto()
-                {
-                    CevapList=cevap,
-
-                };
             }
-            var res = new OgrenciSinavDto()
+            OgrenciSinavDto res = new OgrenciSinavDto()
             {
-                Baslangic=sinavOgrenci.Baslangic,
-                Bitis=sinavOgrenci.Bitis,
-                SinavId=sinavId,
-
+                Baslangic = sinavOgrenci.Baslangic,
+                Bitis = sinavOgrenci.Bitis,
+                SinavId = sinavId,
+                OgrenciId = _currentUser.GetId(),
+                OgrenciCevaplar = ogrenciCevap
             };
+            return res;
         }
         
     }
