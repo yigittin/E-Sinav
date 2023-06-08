@@ -74,6 +74,7 @@ public class SanalVakaDbContext :
     public DbSet<Sinav> Sinavlar { get; set; }
     public DbSet<OgrenciSinav> OgrenciSinavlar { get; set; }
     public DbSet<OgrenciCevap> OgrenciCevaplar { get; set; }
+    public DbSet<SoruCevap> SoruCevaplar { get; set; }
 
 
     public SanalVakaDbContext(DbContextOptions<SanalVakaDbContext> options)

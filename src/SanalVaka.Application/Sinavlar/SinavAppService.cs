@@ -1,4 +1,5 @@
 ﻿using SanalVaka.Dersler;
+using SanalVaka.Many2Many;
 using SanalVaka.OgrenciDtos;
 using SanalVaka.Ogrenciler;
 using SanalVaka.SinavDtos;
@@ -27,6 +28,7 @@ namespace SanalVaka.Sinavlar
         private readonly IRepository<Ders, Guid> _dersRepository;
         private readonly IRepository<OgrenciSinav, int> _ogrenciSinavRepo;
         private readonly IRepository<OgrenciCevap, int> _ogrenciCevapRepo;
+        private readonly IRepository<SoruCevap, Guid> _soruCevapRepo;
         private readonly ICurrentUser _currentUser;
 
         public SinavAppService(IRepository<Sinav, Guid> repository,
@@ -35,7 +37,8 @@ namespace SanalVaka.Sinavlar
             IRepository<Ders, Guid> dersRepository,
             ICurrentUser curUser,
             IRepository<OgrenciSinav, int> ogrenciSinavRepo,
-            IRepository<OgrenciCevap, int> ogrenciCevapRepo) :base(repository)
+            IRepository<OgrenciCevap, int> ogrenciCevapRepo,
+            IRepository<SoruCevap, Guid> soruCevapRepo) :base(repository)
         {
             _soruRepository=soruRepository;
             _cevapRepository=cevapRepository;
@@ -43,6 +46,7 @@ namespace SanalVaka.Sinavlar
             _currentUser = curUser;
             _ogrenciCevapRepo = ogrenciCevapRepo;
             _ogrenciSinavRepo = ogrenciSinavRepo;
+            _soruCevapRepo = soruCevapRepo;
         }
 
         public async Task CreateUpdateSinav(CreateUpdateSinavDto input)
@@ -377,6 +381,71 @@ namespace SanalVaka.Sinavlar
                 
             };
             return res;
+        }
+        public async Task CevapIsaretle(Guid soruId,Guid cevapId)
+        {
+            var queryable = await _soruCevapRepo.GetQueryableAsync();
+            var entity = queryable.Where(x=>x.SoruId==soruId&&x.OgrenciId==_currentUser.Id).FirstOrDefault();
+            if(entity == null)
+            {
+                var newIsaret = new SoruCevap()
+                {
+                    OgrenciCevap=cevapId,
+                    SoruId=soruId,
+                    OgrenciId= (Guid)_currentUser.Id
+                };
+                await _soruCevapRepo.InsertAsync(newIsaret);
+            }
+            else if(entity is not null)
+            {
+                entity.OgrenciId = (Guid)_currentUser.Id;
+                entity.SoruId = soruId;
+                entity.OgrenciCevap = cevapId;
+
+                await _soruCevapRepo.UpdateAsync(entity);                
+            }
+
+            //var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            //var sqlQuery = $@"SELECT DO.OgrenciId as 'OgrenciId',
+            //                DO.DersId as 'DersId',
+            //                AU.Name +' '+AU.Surname as 'OgrenciAdi',
+            //                AU.OgrenciNo as 'OgrenciNo'                         
+            //                FROM 
+            //                DersOgrenciler DO 
+            //                INNER JOIN AbpUsers AU ON AU.Id=DO.OgrenciId
+            //                WHERE DO.DersId='{dersId}'";
+            //var OgrenciList = new List<OgrenciSelectionDto>();
+
+            //using (SqlConnection connection =
+            //new SqlConnection(connectionString))
+            //{
+            //    // Create the Command and Parameter objects.
+            //    SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+            //    // Open the connection in a try/catch block.
+            //    // Create and execute the DataReader, writing the result
+            //    // set to the console window.
+            //    try
+            //    {
+            //        connection.Open();
+            //        SqlDataReader reader = await command.ExecuteReaderAsync();
+            //        while (await reader.ReadAsync())
+            //        {
+            //            var ogrenci = new OgrenciSelectionDto();
+            //            ogrenci.UserId = Guid.Parse(reader["OgrenciId"].ToString());
+            //            ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
+            //            ogrenci.OgrenciAdi = reader["OgrenciAdi"].ToString();
+
+            //            OgrenciList.Add(ogrenci);
+            //        }
+            //        reader.Close();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        throw new UserFriendlyException("Bir şeyler ters gitti");
+            //    }
+            //}
+
         }
 
 

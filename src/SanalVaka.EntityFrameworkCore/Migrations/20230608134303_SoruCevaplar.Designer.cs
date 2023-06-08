@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SanalVaka.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SanalVaka.Migrations
 {
     [DbContext(typeof(SanalVakaDbContext))]
-    partial class SanalVakaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230608134303_SoruCevaplar")]
+    partial class SoruCevaplar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -519,9 +522,6 @@ namespace SanalVaka.Migrations
                     b.Property<Guid?>("OgrenciCevap")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("OgrenciId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("SoruId")
                         .HasColumnType("uniqueidentifier");
 
@@ -973,6 +973,9 @@ namespace SanalVaka.Migrations
                     b.Property<Guid?>("LastModifierId")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
+
+                    b.Property<Guid?>("OgrenciCevap")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Puan")
                         .HasColumnType("float");

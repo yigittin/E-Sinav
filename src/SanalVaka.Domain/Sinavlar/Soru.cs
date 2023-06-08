@@ -17,6 +17,6 @@ namespace SanalVaka.Sorular
         public Guid SinavId { get; set; }
         [ForeignKey("SinavId")]
         public Sinav Sinav { get; set; }
-        public Guid? OgrenciCevap { get; set; }
+        
     }
 }
