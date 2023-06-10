@@ -434,5 +434,64 @@ namespace SanalVaka.Siniflar
             await _sinifYetkiliRepo.DeleteAsync(entity);
         }
 
+        public async Task<List<SinifInfoDto>> SinifAnasayfa()
+        {
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT
+	                            Id,
+	                            SinifLimit,
+	                            SinifName,
+	                            SinifOnayciAdi,
+	                            SinifOnayciId,
+	                            DersId,
+	                            IsOnaylandi,
+	                            CreationTime
+                            FROM
+	                            Siniflar
+                            WHERE
+                                IsDeleted=0
+                            ORDER BY
+	                            CreationTime asc";
+            var sinifList = new List<SinifInfoDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var sinif = new SinifInfoDto()
+                        {
+                            Id = Guid.Parse(reader["Id"].ToString()),
+                            SinifAdi = reader["SinifName"].ToString(),
+                            OnaylayanKullaniciAdi = reader["SinifOnayciAdi"].ToString(),                            
+                            DersId = Guid.Parse(reader["DersId"].ToString()),
+                            IsOnaylandi = Convert.ToBoolean(reader["IsOnaylandi"]),
+                            SinifLimit = Convert.ToInt32(reader["SinifLimit"])                            
+                        };
+                        var ders = await _dersRepo.FindAsync(sinif.DersId);
+                        sinif.DersAdi = ders.DersAdi;
+
+                        sinifList.Add(sinif);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+            return sinifList;
+        }
+
     }
 }

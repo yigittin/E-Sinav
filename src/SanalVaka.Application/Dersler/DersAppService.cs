@@ -486,11 +486,60 @@ namespace SanalVaka.Dersler
             }
             return res;
         }
-        public async Task DersAnasayfa()
+        public async Task<List<DersInfoDto>> GetDersAnasayfa()
         {
-            var roleList = _currentUser.Roles;
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT
+	                            Id,
+	                            DersAdi,
+	                            BolumId,
+	                            CreationTime,
+	                            IsOnaylandi
+                            FROM
+	                            Dersler
+                            WHERE
+                                IsDeleted=0
+                            ORDER BY
+	                            CreationTime asc";
+            var dersList = new List<DersInfoDto>();
 
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var ders = new DersInfoDto()
+                        {
+                            Id = Guid.Parse(reader["Id"].ToString()),
+                            BolumId = Guid.Parse(reader["BolumId"].ToString()),
+                            DersAdi = reader["DersAdi"].ToString(),
+                            IsOnaylandi = Convert.ToBoolean(reader["IsOnaylandi"]),                            
+                        };
+                        var bolum = await _bolumRepository.FindAsync(ders.BolumId);
+                        ders.BolumName = bolum.BolumAdi;
+
+                        dersList.Add(ders);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+            return dersList;
         }
+
 
     }
 

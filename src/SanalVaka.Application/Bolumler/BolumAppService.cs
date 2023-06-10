@@ -14,6 +14,8 @@ using Volo.Abp.Identity;
 using Volo.Abp.Users;
 using Volo.Abp;
 using Volo.Abp.ObjectMapping;
+using SanalVaka.DersDtos;
+using System.Data.SqlClient;
 
 namespace SanalVaka.Bolumler
 {
@@ -199,5 +201,59 @@ namespace SanalVaka.Bolumler
             entity.Yetkililer.Add(kullanici);
             await Repository.UpdateAsync(entity);
         }
+        public async Task<List<BolumInfoDto>> BolumAnasayfa()
+        {
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT
+	                            Id,
+	                            BolumAdi,
+	                            IsOnaylandi,
+	                            BolumOnayciId,
+	                            BolumOnayciAdi,
+	                            CreationTime
+                            FROM
+	                            Bolumler
+                            WHERE
+                                IsDeleted=0
+                            ORDER BY 
+	                            CreationTime asc";
+            var bolumList = new List<BolumInfoDto>();
+
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var bolum = new BolumInfoDto()
+                        {
+                            Id = Guid.Parse(reader["Id"].ToString()),
+                            BolumAdi = reader["BolumAdi"].ToString(),
+                            IsOnaylandi = Convert.ToBoolean(reader["IsOnaylandi"]),
+                            BolumOnayciAdi = reader["BolumOnayciAdi"].ToString()
+                        };
+
+
+                        bolumList.Add(bolum);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+            return bolumList;
+        }
+        
     }
 }
