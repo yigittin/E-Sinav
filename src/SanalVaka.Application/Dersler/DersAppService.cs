@@ -486,6 +486,11 @@ namespace SanalVaka.Dersler
             }
             return res;
         }
+        public async Task DersAnasayfa()
+        {
+            var roleList = _currentUser.Roles;
+
+        }
 
     }
 
