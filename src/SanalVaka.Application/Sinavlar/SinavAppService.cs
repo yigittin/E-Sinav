@@ -503,7 +503,92 @@ namespace SanalVaka.Sinavlar
             }
             return sinavList;
         }
+        public async Task<List<SinavDto>> GetOgrenciSinav()
+        {
+            var curr = _currentUser.GetId();
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"WITH SINAV AS
+                                (SELECT
+	                                Id,
+	                                SinavAdi,
+	                                Agirlik,
+	                                DersId,
+	                                SinavSure,
+	                                BaslangicTarih
+                                FROM
+	                                Sinavlar
+                                WHERE
+	                                IsDeleted=0
+                                ),
+                                DERS as
+                                (
+	                                SELECT
+		                                Id
+	                                FROM 
+		                                Dersler
+	                                WHERE
+		                                IsDeleted=0
+                                ),
+                                DERSOGRENCI as 
+                                (
+	                                SELECT
+		                                *
+	                                FROM
+	                                DersOgrenciler
+                                )
+                                SELECT distinct
+	                                S.DersId,
+	                                S.SinavAdi,
+	                                S.Agirlik,
+	                                S.SinavSure,
+	                                S.BaslangicTarih,
+	                                S.Id
+                                FROM 
+	                                SINAV S
+                                INNER JOIN DERS D ON D.Id=S.DersId
+                                INNER JOIN DERSOGRENCI DO ON DO.DersId=D.Id
+                                WHERE
+	                                DO.OgrenciId='{curr}'";
+            var sinavList = new List<SinavDto>();
 
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        var sinav = new SinavDto()
+                        {
+                            Id = Guid.Parse(reader["Id"].ToString()),
+                            SinavAdi = reader["SinavAdi"].ToString(),
+                            Agirlik = Convert.ToInt32(reader["Agirlik"]),
+                            DersId = Guid.Parse(reader["DersId"].ToString()),
+                            BaslangicTarih = DateTime.Parse(reader["BaslangicTarih"].ToString()),
+                            SinavSure = Convert.ToInt32(reader["SinavSure"])
+                        };
+                        var ders = await _dersRepository.FindAsync(sinav.DersId);
+                        sinav.DersAdi = ders.DersAdi;
+
+                        sinavList.Add(sinav);
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+            return sinavList;
+        }
 
         
     }
