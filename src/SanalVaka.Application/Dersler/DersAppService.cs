@@ -539,6 +539,42 @@ namespace SanalVaka.Dersler
             }
             return dersList;
         }
+        public async Task<Boolean> GetIsOgrenci()
+        {
+            var ogrenciId =  _currentUser.GetId();
+            var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
+            var sqlQuery = $@"SELECT Ogrenci FROM AbpUsers WHERE Id='{ogrenciId}'";
+            var res = false;
+            using (SqlConnection connection =
+            new SqlConnection(connectionString))
+            {
+                // Create the Command and Parameter objects.
+                SqlCommand command = new SqlCommand(sqlQuery, connection);
+
+                // Open the connection in a try/catch block.
+                // Create and execute the DataReader, writing the result
+                // set to the console window.
+                try
+                {
+                    connection.Open();
+                    SqlDataReader reader = await command.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        res = Convert.ToBoolean(reader[0]);
+
+                    }
+                    reader.Close();
+                }
+                catch (Exception ex)
+                {
+                    throw new UserFriendlyException("Bir şeyler ters gitti");
+                }
+            }
+
+            return res;
+
+        }
+
 
 
     }

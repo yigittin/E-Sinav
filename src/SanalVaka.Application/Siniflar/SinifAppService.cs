@@ -214,22 +214,17 @@ namespace SanalVaka.Siniflar
                 if (ogrenci is not null)
                 {
                     var sinifOgrenci = new SinifOgrenci();
-                    sinifOgrenci.SinifId = entity.Id;
-                    sinifOgrenci.OgrenciId = ogrenci.Id;
+                    sinifOgrenci.SinifId = guidSinif;
+                    sinifOgrenci.OgrenciId = identityUser;
                     sinifOgrenciList.Add(sinifOgrenci);
+                    await _sinifOgrenci.InsertAsync(sinifOgrenci);
                 }
                 else
                 {
                     message += identityUser.ToString() + " Id kullanıcı bulunamadı!";
                 }
             }
-            await _sinifOgrenci.InsertManyAsync(sinifOgrenciList);
-            await Repository.UpdateAsync(entity);
-
-            if (String.IsNullOrWhiteSpace(message))
-            {
-                throw new Exception(message);
-            }
+            //await _sinifOgrenci.InsertManyAsync(sinifOgrenciList);
         }
         public async Task SinifOgrenciEkleSingle(Guid guidSinif, Guid ogrenciId)
         {
@@ -317,24 +312,37 @@ namespace SanalVaka.Siniflar
         {
             // await OgrenciRepoGuncelle();
             var connectionString = "Server=.;Database=SanalVaka;Trusted_Connection=True;TrustServerCertificate=True";
-            var sqlQuery = $@"SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo FROM AbpUsers AU 
-                            WHERE Ogrenci=1 AND NOT EXISTS
-			                (
-				                SELECT
-					                Id
-				                FROM
-					                SinifOgrenciler
-				                WHERE
-					                SinifId='{sinifId}' AND IsDeleted=0
-			                ) AND EXISTS
-							(
-								SELECT 
-									Id
-								FROM
-									DersOgrenciler
-								WHERE
-									dersId='{dersId}' AND IsDeleted=0
-							)";
+            var sqlQuery = $@"
+                            WITH OGRENCI as (
+	                            SELECT distinct AU.Id,AU.Name,AU.Surname,AU.OgrenciNo
+	                            FROM AbpUsers AU 
+                                WHERE Ogrenci=1
+                            ),
+                            SINIF as
+                            (
+	                            SELECT
+	                                Id,OgrenciId
+	                            FROM
+		                            SinifOgrenciler
+	                            WHERE
+		                            SinifId='{sinifId}' AND IsDeleted=0
+                            ),
+                            DERS as
+                            (
+	                            SELECT 
+		                            Id,OgrenciId
+	                            FROM
+		                            DersOgrenciler
+	                            WHERE
+		                            dersId='{dersId}' AND IsDeleted=0
+                            )
+                            SELECT
+	                            O.Id,O.Name,O.Surname,O.OgrenciNo
+                            FROM
+	                            OGRENCI O
+                            INNER JOIN DERS D ON D.OgrenciId=O.ID
+                            FULL OUTER JOIN SINIF S ON S.OgrenciId=D.OgrenciId
+                            WHERE S.OgrenciId is NULL";
             var OgrenciList = new List<OgrenciSelectionDto>();
 
             using (SqlConnection connection =
@@ -350,7 +358,7 @@ namespace SanalVaka.Siniflar
                         var ogrenci = new OgrenciSelectionDto();
                         ogrenci.UserId = Guid.Parse(reader["Id"].ToString());
                         ogrenci.OgrenciNo = reader["OgrenciNo"].ToString();
-                        ogrenci.OgrenciAdi = reader["Name"].ToString() + reader["Surname"].ToString();
+                        ogrenci.OgrenciAdi = reader["Name"].ToString()+" " + reader["Surname"].ToString();
 
                         OgrenciList.Add(ogrenci);
                     }
